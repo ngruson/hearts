@@ -1,0 +1,106 @@
+@page "/"
+
+@using Hearts.Contracts
+@inject LocalStorageService LocalStorageService
+@inject SignalRService SignalRService
+
+<div class="flex flex-col items-center mx-auto p-5">
+    <!-- Header Section -->
+    <header class="text-center mb-5">
+        <h1 class="tw-text-3xl">Hearts Game Lobby</h1>
+        <p>Welcome to the Hearts game lobby. Start or join a game to begin playing.</p>
+    </header>
+
+    <!-- Running Games Section -->
+    <section class="w-4/5 mb-5">
+        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Running Games</h2>
+        <ul class="list-none p-0">
+            @foreach (var game in RunningGames)
+            {
+                <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
+                    <span>@game.Id</span>
+                    <button class="bg-green-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-green-700" @onclick="() => JoinGame(game.Id)">Join</button>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <!-- Start New Game Section -->
+    <section class="w-4/5 mb-5">
+        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Start a New Game</h2>
+        <CreateGameButton Player="player" />
+    </section>
+
+    <!-- Waiting Games Section -->
+    <section class="w-4/5 mb-5">
+        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Waiting Games</h2>
+        <ul class="list-none p-0">
+            @foreach (var game in WaitingGames)
+            {
+                <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
+                    <span>@game.Id</span>
+                    <button class="bg-green-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-green-700" @onclick="() => JoinGame(game.Id)">Join</button>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <!-- Player Information Section -->
+    <section class="w-4/5 mb-5">
+        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Player Information</h2>
+        <p>Player Name: @player?.PlayerName</p>
+    </section>
+</div>
+
+@code {
+    private List<Game> RunningGames = new List<Game>();
+    private List<Game> WaitingGames = new List<Game>();
+    private Player? player;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SignalRService.StartAsync();
+
+        player = await LocalStorageService.GetItemAsync<Player>("player");
+
+        if (player is null)
+        {
+            SignalRService.PlayerCreated += OnPlayerCreated;
+            await SignalRService.CreatePlayer("smirking_squiggly");
+        }
+
+        // Fetch running and waiting games from server
+        RunningGames = await FetchRunningGames();
+        WaitingGames = await FetchWaitingGames();
+    }
+
+    private void OnPlayerCreated(object? sender, Player player)
+    {
+        this.player = player;
+        Task.Run(() => LocalStorageService.SetItemAsync("player", player));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Task<List<Game>> FetchRunningGames()
+    {
+        return Task.FromResult(new List<Game>
+        {
+            new Game(Guid.NewGuid(), []),
+            new Game(Guid.NewGuid(), [])
+        });
+    }
+
+    private Task<List<Game>> FetchWaitingGames()
+    {
+        return Task.FromResult(new List<Game>
+        {
+            new Game(Guid.NewGuid(), []),
+            new Game(Guid.NewGuid(), [])
+        });
+    }
+
+    private void JoinGame(Guid gameId)
+    {
+        // Implement join game logic
+    }
+}
