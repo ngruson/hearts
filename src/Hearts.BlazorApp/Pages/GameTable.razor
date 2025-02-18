@@ -1,0 +1,117 @@
+@page "/gameTable"
+
+@using Hearts.Contracts
+@inject LocalStorageService LocalStorageService
+@inject NavigationManager NavigationManager
+@inject SignalRService SignalRService
+
+<div class="grid grid-cols-3 gap-4 h-screen items-center bg-gray-600">
+    <!-- Player 1 (Third row, second column) -->
+    <div class="player flex flex-col items-center col-start-2 row-start-3">
+        <div class="flex justify-center">
+            @foreach (var card in PlayerCards(0))
+            {
+                <img src="@($"/images/cards/{DisplayRank(card.Rank)}_of_{card.Suit.ToString().ToLower()}.svg")" class="h-40 -ml-20" />
+            }
+        </div>
+        <div class="w-32 h-32 rounded-full border-2 border-white mb-2 mt-4"></div>
+        <p class="text-white font-bold text-xl">@PlayerName(0)</p>
+        
+    </div>
+    <!-- Player 2 (Second row, first column) -->  
+    <div class="player flex justify-center items-center col-start-1 row-start-2">
+        <div class="flex flex-col items-center">
+            <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
+            <p class="text-white font-bold text-xl">@PlayerName(1)</p>
+        </div>
+        <div class="flex flex-col items-center ml-12">
+            @foreach (var card in PlayerCards(1))
+            {
+                <img src="/images/cards/back.svg" class="rotate-90 h-40 -mt-32" />
+            }
+        </div>
+    </div>
+    <!-- Player 3 (First row, second column) -->  
+    <div class="player flex flex-col items-center col-start-2 row-start-1">
+        <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
+        <p class="text-white font-bold text-xl">@PlayerName(2)</p>
+        <div class="flex justify-center mt-4">
+            @foreach (var card in PlayerCards(2))
+            {
+                <img src="/images/cards/back.svg" class="h-40 -ml-20" />
+            }
+        </div>
+    </div>
+    <!-- Player 4 (Second row, third column) -->
+    <div class="player flex justify-center items-center col-start-3 row-start-2">
+        <div class="flex flex-col">
+            @foreach (var card in PlayerCards(3))
+            {
+                <img src="/images/cards/back.svg" class="rotate-90 h-40 -mt-32" />
+            }
+        </div>
+        <div class="flex flex-col items-center ml-12">
+            <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
+            <p class="text-white font-bold text-xl">@PlayerName(3)</p>
+        </div>        
+    </div>
+</div>
+
+@code {
+    private Game? game;
+    private Round? round;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SignalRService.GameUpdated += OnGameUpdated;
+        SignalRService.RoundStarted += OnRoundStarted;
+
+        game = await LocalStorageService.GetItemAsync<Game>("game");
+        round = await LocalStorageService.GetItemAsync<Round>("round");
+    }
+
+    private void OnGameUpdated(object? sender, Game game)
+    {
+        this.game = game;
+        Task.Run(() => LocalStorageService.SetItemAsync("game", game));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnRoundStarted(object? sender, Round round)
+    {
+        this.round = round;
+        Task.Run(() => LocalStorageService.SetItemAsync("round", round));
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string? PlayerName(int index)
+    {
+        if (game is null)
+            return null;
+
+        if (game.Players?.Count() <= index)
+            return "Waiting for player";
+
+        return game.Players?[index].PlayerName;
+    }
+
+    private Card[] PlayerCards(int index)
+    {
+        if (round is null || round.Players?.Count() <= index)
+            return [];
+
+        return round.Players![index].Cards;
+    }
+
+    private string DisplayRank(Rank rank)
+    {
+        return rank switch
+        {
+            Rank.Ace => rank.ToString().ToLower(),
+            Rank.King => rank.ToString().ToLower(),
+            Rank.Queen => rank.ToString().ToLower(),
+            Rank.Jack => rank.ToString().ToLower(),
+            _ => ((int)rank).ToString()
+        };
+    }
+}
