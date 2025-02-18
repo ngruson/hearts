@@ -13,9 +13,9 @@
     <PackageVersion Include="AutoFixture.XUnit2" Version="5.0.0-preview0011" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
-    <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.15.0-rc02" />
+    <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.15.0-rc04" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.15.0-rc02" />
-    <PackageVersion Include="Dapr.Client" Version="1.15.0-rc02" />
+    <PackageVersion Include="Dapr.Client" Version="1.15.0-rc04" />
     <PackageVersion Include="Dapr.Workflow" Version="1.15.0-rc02" />
     <!--<PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
