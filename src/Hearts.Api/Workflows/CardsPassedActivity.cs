@@ -4,13 +4,12 @@ using Dapr.Actors;
 using Dapr.Actors.Client;
 using Dapr.Workflow;
 using Hearts.Api.Actors;
-using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
 
-internal class AddBotPlayerActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<AddBotPlayerActivityInput, Result<Game>>
+public class CardsPassedActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<CardsPassedEvent, Result>
 {
-    public override async Task<Result<Game>> RunAsync(WorkflowActivityContext context, AddBotPlayerActivityInput input)
+    public override async Task<Result> RunAsync(WorkflowActivityContext context, CardsPassedEvent input)
     {
         try
         {
@@ -18,19 +17,17 @@ internal class AddBotPlayerActivity(IActorProxyFactory actorProxyFactory) : Work
             {
                 UseJsonSerialization = true,
                 JsonSerializerOptions = new JsonSerializerOptions
-                {                    
+                {
                     PropertyNameCaseInsensitive = true
                 }
             };
-            
+
             ActorId actorId = new(input.GameId.ToString());
             IGameActor actorProxy = actorProxyFactory.CreateActorProxy<IGameActor>(actorId, nameof(GameActor), actorProxyOptions);
 
-            await actorProxy.AddBotPlayer();
+            await actorProxy.PassCards(input.CardsPassed);
 
-            Game game = await actorProxy.Map(context.InstanceId);
-
-            return game;
+            return Result.Success();
         }
         catch (Exception ex)
         {

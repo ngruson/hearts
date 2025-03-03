@@ -1,65 +1,76 @@
 @page "/gameTable"
 
 @using Hearts.Contracts
+@inject IJSRuntime JS
 @inject LocalStorageService LocalStorageService
 @inject NavigationManager NavigationManager
 @inject SignalRService SignalRService
 
-<div class="grid grid-cols-3 gap-4 h-screen items-center bg-gray-600">
-    <!-- Player 1 (Third row, second column) -->
-    <div class="player flex flex-col items-center col-start-2 row-start-3">
-        <div class="flex justify-center">
-            @foreach (var card in PlayerCards(0))
-            {
-                <img src="@($"/images/cards/{DisplayRank(card.Rank)}_of_{card.Suit.ToString().ToLower()}.svg")" class="h-40 -ml-20" />
-            }
+<div class="h-screen overflow-hidden bg-gray-600">
+    <div class="h-9/10 grid grid-cols-3 gap-4 items-center">
+        <!-- Player 1 (Third row, second column) -->
+        <div class="flex flex-col items-center col-start-2 row-start-3">
+            <div class="flex justify-center">
+                @foreach (var card in PlayerCards(0))
+                {
+                    <CardComponent Card=@card Toggled=@ToggleCard(0, card) Style="h-40 -ml-20" CardSelectedStyle="up" SelectedCards=@PlayerCardsToPass(0) OnClick="CardSelected" />
+                }
+            </div>
+            <div class="w-32 h-32 rounded-full border-2 border-white mb-2 mt-4"></div>
+            <p class="text-white font-bold text-xl">@PlayerName(0)</p>
+
         </div>
-        <div class="w-32 h-32 rounded-full border-2 border-white mb-2 mt-4"></div>
-        <p class="text-white font-bold text-xl">@PlayerName(0)</p>
-        
-    </div>
-    <!-- Player 2 (Second row, first column) -->  
-    <div class="player flex justify-center items-center col-start-1 row-start-2">
-        <div class="flex flex-col items-center">
+        <!-- Player 2 (Second row, first column) -->
+        <div class="flex justify-center items-center col-start-1 row-start-2">
+            <div class="flex flex-col items-center">
+                <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
+                <p class="text-white font-bold text-xl">@PlayerName(1)</p>
+            </div>
+            <div class="flex flex-col items-center ml-12">
+                @foreach (var card in PlayerCards(1))
+                {
+                    <CardComponent Card=@card FaceDown=true Toggled=@ToggleCard(1, card) Style="rotate-90 h-40 -mt-32" CardSelectedStyle="right" />
+                }
+            </div>
+        </div>
+        <!-- Player 3 (First row, second column) -->
+        <div class="flex flex-col items-center col-start-2 row-start-1">
             <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
-            <p class="text-white font-bold text-xl">@PlayerName(1)</p>
+            <p class="text-white font-bold text-xl">@PlayerName(2)</p>
+            <div class="flex justify-center mt-4">
+                @foreach (var card in PlayerCards(2))
+                {
+                    <CardComponent Card=@card FaceDown=true Toggled=@ToggleCard(2, card) Style="h-40 -ml-20" CardSelectedStyle="down" />
+                }
+            </div>
         </div>
-        <div class="flex flex-col items-center ml-12">
-            @foreach (var card in PlayerCards(1))
-            {
-                <img src="/images/cards/back.svg" class="rotate-90 h-40 -mt-32" />
-            }
+        <!-- Player 4 (Second row, third column) -->
+        <div class="flex justify-center items-center col-start-3 row-start-2 -ml-50">
+            <div class="flex flex-col">
+                @foreach (var card in PlayerCards(3))
+                {
+                    <CardComponent Card=@card FaceDown=true Toggled=@ToggleCard(3, card) Style="rotate-90 h-40 -mt-32" CardSelectedStyle="left" />
+                }
+            </div>
+            <div class="flex flex-col items-center ml-12">
+                <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
+                <p class="text-white font-bold text-xl">@PlayerName(3)</p>
+            </div>
         </div>
     </div>
-    <!-- Player 3 (First row, second column) -->  
-    <div class="player flex flex-col items-center col-start-2 row-start-1">
-        <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
-        <p class="text-white font-bold text-xl">@PlayerName(2)</p>
-        <div class="flex justify-center mt-4">
-            @foreach (var card in PlayerCards(2))
-            {
-                <img src="/images/cards/back.svg" class="h-40 -ml-20" />
-            }
-        </div>
-    </div>
-    <!-- Player 4 (Second row, third column) -->
-    <div class="player flex justify-center items-center col-start-3 row-start-2">
-        <div class="flex flex-col">
-            @foreach (var card in PlayerCards(3))
-            {
-                <img src="/images/cards/back.svg" class="rotate-90 h-40 -mt-32" />
-            }
-        </div>
-        <div class="flex flex-col items-center ml-12">
-            <div class="w-32 h-32 rounded-full border-2 border-white mb-2"></div>
-            <p class="text-white font-bold text-xl">@PlayerName(3)</p>
-        </div>        
+    <div class="flex justify-end h-1/10 p-4">
+        <button @onclick="PassCards" disabled="@passButtonDisabled" class="mr-100 mb-50 w-40 h-20 bg-blue-800 text-white text-xl border-4 border-gray-500 py-2 px-4 rounded">
+            Pass
+        </button>
     </div>
 </div>
 
 @code {
     private Game? game;
+    private Player? player;
+    private RoundPlayer? roundPlayer;
     private Round? round;
+    private bool passButtonDisabled = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,12 +78,13 @@
         SignalRService.RoundStarted += OnRoundStarted;
 
         game = await LocalStorageService.GetItemAsync<Game>("game");
+        player = await LocalStorageService.GetItemAsync<Player>("player");
         round = await LocalStorageService.GetItemAsync<Round>("round");
     }
 
     private void OnGameUpdated(object? sender, Game game)
     {
-        this.game = game;
+        this.game = game;        
         Task.Run(() => LocalStorageService.SetItemAsync("game", game));
         InvokeAsync(StateHasChanged);
     }
@@ -80,6 +92,7 @@
     private void OnRoundStarted(object? sender, Round round)
     {
         this.round = round;
+        this.roundPlayer = round.Players?.FirstOrDefault(p => p.Player.Id == player?.Id);
         Task.Run(() => LocalStorageService.SetItemAsync("round", round));
         InvokeAsync(StateHasChanged);
     }
@@ -103,15 +116,91 @@
         return round.Players![index].Cards;
     }
 
-    private string DisplayRank(Rank rank)
+    private Card[] PlayerCardsToPass(int index)
     {
-        return rank switch
+        if (round is null || round.Players?.Count() <= index)
+            return [];
+
+        return round.Players![index].CardsToPass;
+    }
+
+    private bool ToggleCard(int index, Card card)
+    {        
+        return PlayerCardsToPass(index).Any(_ => _.Suit == card.Suit && _.Rank == card.Rank);
+    }
+
+    private void CardSelected(Card card)
+    {
+        if (!roundPlayer!.CardsToPass.Contains(card))
+
         {
-            Rank.Ace => rank.ToString().ToLower(),
-            Rank.King => rank.ToString().ToLower(),
-            Rank.Queen => rank.ToString().ToLower(),
-            Rank.Jack => rank.ToString().ToLower(),
-            _ => ((int)rank).ToString()
-        };
+            var cardsList = roundPlayer.CardsToPass.ToList();
+            cardsList.Add(card);
+            roundPlayer.CardsToPass = cardsList.ToArray();
+        }
+        else
+        {
+            roundPlayer.CardsToPass = roundPlayer.CardsToPass.Where(c => c != card).ToArray();
+        }
+
+        passButtonDisabled = roundPlayer.CardsToPass.Length < 3;
+    }
+
+    private async Task PassCards()
+    {        
+        //await JS.InvokeVoidAsync("moveCardAnimation", card.CardId);
+
+        PassCard[] passCards = round!.Players.SelectMany(roundPlayer => roundPlayer.CardsToPass.Select(card =>
+            new PassCard(
+                roundPlayer.Player.Id,
+                GetPlayerTo(round.Players.ToList().IndexOf(roundPlayer)).Player.Id,
+                card))).ToArray();
+
+        foreach (RoundPlayer roundPlayer in round.Players)
+        {
+            foreach (var card in roundPlayer.CardsToPass)
+            {
+                RoundPlayer fromPlayer = roundPlayer;
+                RoundPlayer toPlayer = GetPlayerTo(round!.Players.ToList().IndexOf(fromPlayer));
+                fromPlayer.RemoveCard(card);
+                toPlayer.AddCard(card);
+            }
+
+            roundPlayer.CardsToPass = [];
+        }
+
+        StateHasChanged();        
+                
+        await SignalRService.PassCards(game!, passCards);
+    }
+
+    private RoundPlayer GetPlayerTo(int index)
+    {
+        switch (game?.PassingDirection)
+        {
+            case PassingDirection.Left:
+                return GetLeftPlayer();
+            case PassingDirection.Across:
+                return GetAcrossPlayer();
+            case PassingDirection.Right:
+                return GetRightPlayer();
+            default:
+                throw new Exception("Invalid player index");
+        }
+
+        RoundPlayer GetLeftPlayer()
+        {
+            return round!.Players[(index + 1) % 4];
+        }
+
+        RoundPlayer GetAcrossPlayer()
+        {
+            return round!.Players[(index + 2) % 4];
+        }
+
+        RoundPlayer GetRightPlayer()
+        {
+            return round!.Players[(index + 3) % 4];
+        }
     }
 }

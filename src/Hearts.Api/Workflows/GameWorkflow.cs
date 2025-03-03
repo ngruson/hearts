@@ -47,7 +47,7 @@ internal class GameWorkflow : Workflow<GameWorkflowInput, Result>
                 }
             }
 
-            Result<Contracts.Round> startNewRoundActivityResult = await context.CallActivityAsync<Result<Contracts.Round>>(
+            Result<StartNewRoundActivityOutput> startNewRoundActivityResult = await context.CallActivityAsync<Result<StartNewRoundActivityOutput>>(
                 nameof(StartNewRoundActivity),
                 new StartNewRoundActivityInput(game.Id));
 
@@ -55,12 +55,21 @@ internal class GameWorkflow : Workflow<GameWorkflowInput, Result>
             {
                 await context.CallActivityAsync(
                     nameof(NotifyRoundStartedActivity),
-                    new NotifyRoundStartedActivityInput(startNewRoundActivityResult.Value));
+                    new NotifyRoundStartedActivityInput(startNewRoundActivityResult.Value.Round));
+
+                await context.CallActivityAsync(
+                    nameof(NotifyGameUpdatedActivity),
+                    new NotifyGameUpdatedActivityInput(startNewRoundActivityResult.Value.Game));
             }
             else
             {
                 return Result.Error("Failed to start new round");
             }
+
+            CardsPassedEvent cardsPassedEvent = await context.WaitForExternalEventAsync<CardsPassedEvent>(GameWorkflowEvents.CardsPassed);
+            await context.CallActivityAsync(
+                nameof(CardsPassedActivity),
+                cardsPassedEvent);
 
             // Start the game
 

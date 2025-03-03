@@ -25,15 +25,8 @@ public class SignalRService
             this.OnPlayerCreated(player);
         });
 
-        this.hubConnection.On<Game>(nameof(IGameClient.GameUpdated), game =>
-        {            
-            this.OnGameUpdated(game);
-        });
-
-        this.hubConnection.On<Round>(nameof(IGameClient.RoundStarted), round =>
-        {
-            this.OnRoundStarted(round);
-        });
+        this.hubConnection.On<Game>(nameof(IGameClient.GameUpdated), this.OnGameUpdated);
+        this.hubConnection.On<Round>(nameof(IGameClient.RoundStarted), this.OnRoundStarted);
     }
 
     private void OnPlayerCreated(Player player)
@@ -59,6 +52,11 @@ public class SignalRService
     public async Task CreateNewGame(Player player)
     {
         await this.hubConnection.SendAsync(nameof(IGameClient.CreateNewGame), player);
+    }
+
+    public async Task PassCards(Game game, PassCard[] passCards)
+    {
+        await this.hubConnection.SendAsync(nameof(IGameClient.PassCards), game.Id, game.WorkflowInstanceId, passCards);
     }
 
     public async Task StartAsync()

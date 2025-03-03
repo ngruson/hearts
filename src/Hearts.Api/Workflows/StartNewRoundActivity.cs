@@ -4,13 +4,12 @@ using Dapr.Actors;
 using Dapr.Actors.Client;
 using Dapr.Workflow;
 using Hearts.Api.Actors;
-using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
 
-class StartNewRoundActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<StartNewRoundActivityInput, Result<Contracts.Round>>
+class StartNewRoundActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<StartNewRoundActivityInput, Result<StartNewRoundActivityOutput>>
 {
-    public override async Task<Result<Contracts.Round>> RunAsync(WorkflowActivityContext context, StartNewRoundActivityInput input)
+    public override async Task<Result<StartNewRoundActivityOutput>> RunAsync(WorkflowActivityContext context, StartNewRoundActivityInput input)
     {
         try
         {
@@ -27,7 +26,9 @@ class StartNewRoundActivity(IActorProxyFactory actorProxyFactory) : WorkflowActi
             IGameActor actorProxy = actorProxyFactory.CreateActorProxy<IGameActor>(actorId, nameof(GameActor), actorProxyOptions);
 
             Contracts.Round round = await actorProxy.StartNewRound();
-            return round;
+            Contracts.Game game = await actorProxy.Map(context.InstanceId);
+
+            return new StartNewRoundActivityOutput(game, round);
         }
         catch (Exception ex)
         {

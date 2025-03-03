@@ -17,16 +17,17 @@ builder.Services.AddActors(options =>
 builder.Services.AddDaprWorkflow(options =>
 {
     options.RegisterWorkflow<GameWorkflow>();
+
+    options.RegisterActivity<AddBotPlayerActivity>();
+    options.RegisterActivity<CardsPassedActivity>();
     options.RegisterActivity<CreateNewGameActivity>();
     options.RegisterActivity<NotifyGameUpdatedActivity>();
-    options.RegisterActivity<NotifyRoundStartedActivity>();
-    options.RegisterActivity<AddBotPlayerActivity>();
+    options.RegisterActivity<NotifyRoundStartedActivity>();    
     options.RegisterActivity<StartNewRoundActivity>();
 });
 
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameHub>();
-builder.Services.AddSingleton<ActorInvoker>();
 builder.Services.AddSingleton<IClientCallback, ClientCallback>();
 
 builder.Services.AddCors();

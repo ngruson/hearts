@@ -29,4 +29,11 @@ public class GameHub(DaprWorkflowClient daprWorkflowClient) : Hub<IGameClient>
         GameWorkflowInput input = new(player);
         await daprWorkflowClient.ScheduleNewWorkflowAsync(nameof(GameWorkflow), null, input);
     }
+
+    public async Task PassCards(Guid gameId, string workflowInstanceId, PassCard[] passCards)
+    {
+        await daprWorkflowClient.RaiseEventAsync(workflowInstanceId,
+            GameWorkflowEvents.CardsPassed,
+            new CardsPassedEvent(gameId, passCards));
+    }
 }
