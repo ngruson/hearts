@@ -2,7 +2,8 @@ name: CI Build
 
 on:
   workflow_dispatch:
-  push:    
+  push:
+  pull_request:
   
 jobs:
   build:
