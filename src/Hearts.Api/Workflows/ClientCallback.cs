@@ -1,4 +1,3 @@
-using Hearts.Api.Actors;
 using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
@@ -15,7 +14,7 @@ internal class ClientCallback(GameHub hub) : IClientCallback
         await hub.Clients.Caller.GameUpdated(game);
     }
 
-    public virtual async Task RoundStarted(Contracts.Round round)
+    public virtual async Task RoundStarted(Round round)
     {
         await hub.Clients.Caller.RoundStarted(round);
     }

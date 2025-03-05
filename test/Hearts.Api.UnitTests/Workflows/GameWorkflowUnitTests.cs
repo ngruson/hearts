@@ -178,7 +178,7 @@ public class GameWorkflowUnitTests
             .Returns(Result.Success(newGame));
         }
 
-        workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        workflowContext.CallActivityAsync<Result<Round>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>())
         .Returns(Result.Error("Failed to start new round"));
@@ -203,7 +203,7 @@ public class GameWorkflowUnitTests
             nameof(NotifyGameUpdatedActivity),
             Arg.Any<NotifyGameUpdatedActivityInput>());
 
-        await workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        await workflowContext.CallActivityAsync<Result<Round>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>());
 

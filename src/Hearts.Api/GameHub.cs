@@ -10,6 +10,15 @@ namespace Hearts.Api;
 
 public class GameHub(DaprWorkflowClient daprWorkflowClient) : Hub<IGameClient>
 {
+    public new virtual IHubCallerClients<IGameClient> Clients
+    {
+        get
+        {            
+            return base.Clients;
+        }
+        set => base.Clients = value;
+    }
+
     public async Task CreatePlayer(string name)
     {
         if (this.Clients.Caller is null)
