@@ -1,5 +1,57 @@
-﻿<h3>CardComponent</h3>
+@using Hearts.Contracts
+
+<img id="@cardId" src="@(ImageUrl)" class="@imageClass" @onclick="OnImageClick" />
 
 @code {
+    [Parameter]
+    public required Card Card { get; set; }
 
+    [Parameter]
+    public bool FaceDown { get; set; } = false;
+
+    [Parameter]
+    public bool Toggled { get; set; } = false;
+
+    [Parameter]
+    public Card[] SelectedCards { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<Card> OnClick { get; set; }
+
+    [Parameter]
+    public string Style { get; set; } = "";
+
+    [Parameter]
+    public string CardSelectedStyle { get; set; } = "";
+
+    private string cardId = $"card-{Guid.NewGuid()}";    
+
+    private string ImageUrl => FaceDown ? "/images/cards/back.svg" : $"/images/cards/{DisplayRank(Card!.Rank)}_of_{Card.Suit.ToString().ToLower()}.svg";
+
+    private async Task OnImageClick()
+    {        
+        if (SelectedCards.Contains(Card) || SelectedCards.Length < 3)
+        {
+            Toggled = !Toggled;
+
+            if (OnClick.HasDelegate)
+            {
+                await OnClick.InvokeAsync(Card);
+            }
+        }
+    }
+
+    private string imageClass => Toggled ? $"card {CardSelectedStyle} {Style} z-0" : $"card {Style} z-0";
+
+    private string? DisplayRank(Rank? rank)
+    {
+        return rank switch
+        {
+            Rank.Ace => rank?.ToString().ToLower(),
+            Rank.King => rank?.ToString().ToLower(),
+            Rank.Queen => rank?.ToString().ToLower(),
+            Rank.Jack => rank?.ToString().ToLower(),
+            _ => ((int?)rank).ToString()
+        };
+    }
 }

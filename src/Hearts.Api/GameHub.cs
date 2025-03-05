@@ -10,6 +10,15 @@ namespace Hearts.Api;
 
 public class GameHub(DaprWorkflowClient daprWorkflowClient) : Hub<IGameClient>
 {
+    public new virtual IHubCallerClients<IGameClient> Clients
+    {
+        get
+        {            
+            return base.Clients;
+        }
+        set => base.Clients = value;
+    }
+
     public async Task CreatePlayer(string name)
     {
         if (this.Clients.Caller is null)
@@ -28,5 +37,12 @@ public class GameHub(DaprWorkflowClient daprWorkflowClient) : Hub<IGameClient>
     {
         GameWorkflowInput input = new(player);
         await daprWorkflowClient.ScheduleNewWorkflowAsync(nameof(GameWorkflow), null, input);
+    }
+
+    public async Task PassCards(Guid gameId, string workflowInstanceId, PassCard[] passCards)
+    {
+        await daprWorkflowClient.RaiseEventAsync(workflowInstanceId,
+            GameWorkflowEvents.CardsPassed,
+            new CardsPassedEvent(gameId, passCards));
     }
 }

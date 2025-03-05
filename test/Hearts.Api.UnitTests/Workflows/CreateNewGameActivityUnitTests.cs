@@ -25,7 +25,7 @@ public class CreateNewGameActivityUnitTests
     {
         // Arrange
 
-        gameActor.Map().Returns(game);
+        gameActor.Map(workflowContext.InstanceId).Returns(game);
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Returns(gameActor);

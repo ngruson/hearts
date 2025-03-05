@@ -2,7 +2,6 @@ using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
 using Dapr.Workflow;
-using Hearts.Api.Actors;
 using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using NSubstitute;
@@ -17,11 +16,12 @@ public class GameWorkflowUnitTests
         [Substitute, Frozen] WorkflowContext workflowContext,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut,
-        Contracts.Round round)
+        Round round,
+        CardsPassedEvent cardsPassedEvent)
     {
         // Arrange
 
-        Game newGame = new(Guid.NewGuid(), [gameWorkflowInput.Player]);
+        Game newGame = new(Guid.NewGuid(), workflowContext.InstanceId, [gameWorkflowInput.Player]);
 
         workflowContext.CallActivityAsync<Result<Game>>(
             nameof(CreateNewGameActivity),
@@ -38,10 +38,13 @@ public class GameWorkflowUnitTests
             .Returns(Result.Success(newGame));
         }
 
-        workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        workflowContext.CallActivityAsync<Result<StartNewRoundActivityOutput>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>())
-        .Returns(Result.Success(round));
+        .Returns(Result.Success(new StartNewRoundActivityOutput(newGame, round)));
+
+        workflowContext.WaitForExternalEventAsync<CardsPassedEvent>(GameWorkflowEvents.CardsPassed)
+            .Returns(cardsPassedEvent);
 
         // Act
 
@@ -59,17 +62,24 @@ public class GameWorkflowUnitTests
             nameof(AddBotPlayerActivity),
             Arg.Any<AddBotPlayerActivityInput>());
 
-        await workflowContext.Received(4).CallActivityAsync(
+        await workflowContext.Received(5).CallActivityAsync(
             nameof(NotifyGameUpdatedActivity),
             Arg.Any<NotifyGameUpdatedActivityInput>());
 
-        await workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        await workflowContext.CallActivityAsync<Result<StartNewRoundActivityOutput>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>());
 
         await workflowContext.Received().CallActivityAsync(
             nameof(NotifyRoundStartedActivity),
             Arg.Any<NotifyRoundStartedActivityInput>());
+
+        await workflowContext.Received().WaitForExternalEventAsync<CardsPassedEvent>(
+            nameof(GameWorkflowEvents.CardsPassed));
+
+        await workflowContext.Received().CallActivityAsync(
+            nameof(CardsPassedActivity),
+            cardsPassedEvent);
     }
 
     [Theory, AutoNSubstituteData]
@@ -110,7 +120,7 @@ public class GameWorkflowUnitTests
     {
         // Arrange
 
-        Game newGame = new(Guid.NewGuid(), [gameWorkflowInput.Player]);
+        Game newGame = new(Guid.NewGuid(), workflowContext.InstanceId, [gameWorkflowInput.Player]);
 
         workflowContext.CallActivityAsync<Result<Game>>(
             nameof(CreateNewGameActivity),
@@ -151,7 +161,7 @@ public class GameWorkflowUnitTests
     {
         // Arrange
 
-        Game newGame = new(Guid.NewGuid(), [gameWorkflowInput.Player]);
+        Game newGame = new(Guid.NewGuid(), workflowContext.InstanceId, [gameWorkflowInput.Player]);
 
         workflowContext.CallActivityAsync<Result<Game>>(
             nameof(CreateNewGameActivity),
@@ -168,7 +178,7 @@ public class GameWorkflowUnitTests
             .Returns(Result.Success(newGame));
         }
 
-        workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        workflowContext.CallActivityAsync<Result<Round>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>())
         .Returns(Result.Error("Failed to start new round"));
@@ -193,7 +203,7 @@ public class GameWorkflowUnitTests
             nameof(NotifyGameUpdatedActivity),
             Arg.Any<NotifyGameUpdatedActivityInput>());
 
-        await workflowContext.CallActivityAsync<Result<Contracts.Round>>(
+        await workflowContext.CallActivityAsync<Result<Round>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>());
 

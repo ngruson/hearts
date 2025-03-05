@@ -6,7 +6,6 @@ using Dapr.Actors.Client;
 using Dapr.Workflow;
 using Hearts.Api.Actors;
 using Hearts.Api.Workflows;
-using Hearts.Contracts;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -32,7 +31,7 @@ public class StartNewRoundActivityUnitTests
 
         // Act
 
-        Result<Contracts.Round> result = await sut.RunAsync(workflowContext, startNewRoundActivityInput);
+        Result<StartNewRoundActivityOutput> result = await sut.RunAsync(workflowContext, startNewRoundActivityInput);
 
         // Assert
 
@@ -53,7 +52,7 @@ public class StartNewRoundActivityUnitTests
 
         // Act
 
-        Result<Contracts.Round> result = await sut.RunAsync(workflowContext, startNewRoundActivityInput);
+        Result<StartNewRoundActivityOutput> result = await sut.RunAsync(workflowContext, startNewRoundActivityInput);
 
         // Assert
 

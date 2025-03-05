@@ -9,6 +9,7 @@ public interface IGameActor : IActor
     Task AddPlayer(Player player);
     Task AddBotPlayer();
     Task<Contracts.Round> StartNewRound();
+    Task PassCards(PassCard[] passCards);
 
-    Task<Game> Map();
+    Task<Game> Map(string workflowInstanceId);
 }

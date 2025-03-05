@@ -32,7 +32,7 @@ internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory) : Wor
 
             await actorProxy.AddPlayer(input.Player);
 
-            Game game = await actorProxy.Map();
+            Game game = await actorProxy.Map(context.InstanceId);
 
 
                 //InvokeMethodAsync(nameof(GameActor.AddPlayer), input.Player);

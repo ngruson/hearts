@@ -22,6 +22,8 @@ public class Round
 
         round.DealCards();
 
+        round.SelectCardsToPass();
+
         return round;
     }
 
@@ -57,6 +59,15 @@ public class Round
         {
             player.Cards = [.. player.Cards
                 .OrderBy(card => card, new CardComparer())];
+        }
+    }
+
+    private void SelectCardsToPass()
+    {
+        foreach (RoundPlayer player in this.Players.Where(_ => _.Player is BotPlayer))
+        {
+            Card[] cardsToPass = [.. player.Cards.Take(3)];
+            player.CardsToPass = cardsToPass;
         }
     }
 

@@ -12,4 +12,6 @@ public interface IGameClient
     Task GameStarted(Game game);
 
     Task RoundStarted(Round round);
+
+    Task PassCards(Guid gameId, PassCard[] passCards);
 }
