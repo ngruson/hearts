@@ -21,6 +21,9 @@ jobs:
         run: |
             dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover \
             test/Hearts.Api.UnitTests/Hearts.Api.UnitTests.csproj
+
+            dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover \
+            test/Hearts.Contracts.UnitTests/Hearts.Contracts.UnitTests.csproj
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
