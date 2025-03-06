@@ -1,5 +1,6 @@
+using System.Diagnostics;
 using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
 
-record GameWorkflowInput(Player Player);
+record GameWorkflowInput(string TraceId, string SpanId, Player Player);

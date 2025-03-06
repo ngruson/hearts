@@ -1,17 +1,22 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Ardalis.Result;
 using Dapr.Actors;
 using Dapr.Actors.Client;
 using Dapr.Workflow;
 using Hearts.Api.Actors;
+using Hearts.Api.OpenTelemetry;
 using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
 
-internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<CreateNewGameActivityInput, Result<Game>>
+internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory, Instrumentation instrumentation) : WorkflowActivity<CreateNewGameActivityInput, Result<Game>>
 {
     public override async Task<Result<Game>> RunAsync(WorkflowActivityContext context, CreateNewGameActivityInput input)
     {
+        ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
+        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(CreateNewGameActivity), ActivityKind.Internal, activityContext);
+
         try
         {
             ActorProxyOptions actorProxyOptions = new()
@@ -20,10 +25,7 @@ internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory) : Wor
                 JsonSerializerOptions = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
-                },
-                //{
-                //    Converters = { new PlayerCardsJsonConverter() }
-                //}
+                }                
             };
 
             Guid guid = Guid.CreateVersion7();
@@ -32,17 +34,11 @@ internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory) : Wor
 
             await actorProxy.AddPlayer(input.Player);
 
-            Game game = await actorProxy.Map(context.InstanceId);
-
-
-                //InvokeMethodAsync(nameof(GameActor.AddPlayer), input.Player);
-
-            //Game game = await actorInvoker.InvokeMethodAsync<Game>(nameof(GameActor.Map));
-
-            return game;
+            return await actorProxy.Map(context.InstanceId);
         }
         catch (Exception ex)
         {
+            activity?.AddException(ex);
             return Result.Error(ex.Message);
         }
     }

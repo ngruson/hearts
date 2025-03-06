@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -18,6 +19,12 @@ public class NotifyGameUpdatedActivityUnitTests
         NotifyGameUpdatedActivity sut)
     {
         // Arrange
+
+        notifyGameUpdatedActivityInput = notifyGameUpdatedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -41,6 +48,12 @@ public class NotifyGameUpdatedActivityUnitTests
 
         clientCallback.GameUpdated(notifyGameUpdatedActivityInput.Game)
             .ThrowsAsync<Exception>();
+
+        notifyGameUpdatedActivityInput = notifyGameUpdatedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 

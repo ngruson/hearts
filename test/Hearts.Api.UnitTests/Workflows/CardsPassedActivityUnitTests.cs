@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -17,13 +18,19 @@ public class CardsPassedActivityUnitTests
     internal async Task return_success_when_pass_cards_completes(
         [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
         CardsPassedActivity sut,
-        CardsPassedEvent cardsPassedEvent)
+        CardsPassedActivityInput cardsPassedActivityInput)
     {
         // Arrange
 
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
-        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedEvent);
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
 
         // Assert
 
@@ -35,16 +42,22 @@ public class CardsPassedActivityUnitTests
         [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
         [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
         CardsPassedActivity sut,
-        CardsPassedEvent cardsPassedEvent)
+        CardsPassedActivityInput cardsPassedActivityInput)
     {
         // Arrange
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<ActorProxyOptions>())
             .Throws(new Exception());
 
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
-        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedEvent);
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
 
         // Assert
 

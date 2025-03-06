@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
 using Dapr.Workflow;
+using Hearts.Api.OpenTelemetry;
 using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using NSubstitute;
@@ -13,7 +15,9 @@ public class GameWorkflowUnitTests
 {
     [Theory, AutoNSubstituteData]
     internal async Task return_success_when_workflow_runs_ok(
+        [Substitute, Frozen] Instrumentation instrumentation,
         [Substitute, Frozen] WorkflowContext workflowContext,
+        Activity activity,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut,
         Round round,
@@ -45,6 +49,17 @@ public class GameWorkflowUnitTests
 
         workflowContext.WaitForExternalEventAsync<CardsPassedEvent>(GameWorkflowEvents.CardsPassed)
             .Returns(cardsPassedEvent);
+
+        instrumentation.StartActivity(nameof(GameWorkflow), ActivityKind.Internal, Arg.Any<ActivityContext>())
+           .Returns(activity);
+
+        sut.Instrumentation = instrumentation;
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -79,12 +94,14 @@ public class GameWorkflowUnitTests
 
         await workflowContext.Received().CallActivityAsync(
             nameof(CardsPassedActivity),
-            cardsPassedEvent);
+            Arg.Any<CardsPassedActivityInput>());
     }
 
     [Theory, AutoNSubstituteData]
     internal async Task return_error_when_game_could_not_be_created(
+        [Substitute, Frozen] Instrumentation instrumentation,
         [Substitute, Frozen] WorkflowContext workflowContext,
+        Activity activity,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut)
     {
@@ -94,6 +111,17 @@ public class GameWorkflowUnitTests
             nameof(CreateNewGameActivity),
             Arg.Any<CreateNewGameActivityInput>())
         .Returns(Result.Error("Failed to create new game"));
+
+        instrumentation.StartActivity(nameof(GameWorkflow), ActivityKind.Internal, Arg.Any<ActivityContext>())
+            .Returns(activity);
+
+        sut.Instrumentation = instrumentation;
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -114,7 +142,9 @@ public class GameWorkflowUnitTests
 
     [Theory, AutoNSubstituteData]
     internal async Task return_error_when_bot_player_could_not_be_added(
+        [Substitute, Frozen] Instrumentation instrumentation,
         [Substitute, Frozen] WorkflowContext workflowContext,
+        Activity activity,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut)
     {
@@ -131,6 +161,17 @@ public class GameWorkflowUnitTests
             nameof(AddBotPlayerActivity),
             Arg.Any<AddBotPlayerActivityInput>())
         .Returns(Result.Error("Failed to add bot player"));
+
+        instrumentation.StartActivity(nameof(GameWorkflow), ActivityKind.Internal, Arg.Any<ActivityContext>())
+            .Returns(activity);
+
+        sut.Instrumentation = instrumentation;
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -155,7 +196,9 @@ public class GameWorkflowUnitTests
 
     [Theory, AutoNSubstituteData]
     internal async Task return_error_when_round_could_not_be_started(
+        [Substitute, Frozen] Instrumentation instrumentation,
         [Substitute, Frozen] WorkflowContext workflowContext,
+        Activity activity,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut)
     {
@@ -182,6 +225,17 @@ public class GameWorkflowUnitTests
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>())
         .Returns(Result.Error("Failed to start new round"));
+
+        instrumentation.StartActivity(nameof(GameWorkflow), ActivityKind.Internal, Arg.Any<ActivityContext>())
+            .Returns(activity);
+
+        sut.Instrumentation = instrumentation;
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -214,7 +268,9 @@ public class GameWorkflowUnitTests
 
     [Theory, AutoNSubstituteData]
     internal async Task return_error_when_exception_is_thrown(
+        [Substitute, Frozen] Instrumentation instrumentation,
         [Substitute, Frozen] WorkflowContext workflowContext,
+        Activity activity,
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut)
     {
@@ -224,6 +280,17 @@ public class GameWorkflowUnitTests
             nameof(CreateNewGameActivity),
             Arg.Any<CreateNewGameActivityInput>())
         .ThrowsAsync<Exception>();
+
+        instrumentation.StartActivity(nameof(GameWorkflow), ActivityKind.Internal, Arg.Any<ActivityContext>())
+            .Returns(activity);
+
+        sut.Instrumentation = instrumentation;
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 

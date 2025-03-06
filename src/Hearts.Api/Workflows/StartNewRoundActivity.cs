@@ -1,16 +1,21 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Ardalis.Result;
 using Dapr.Actors;
 using Dapr.Actors.Client;
 using Dapr.Workflow;
 using Hearts.Api.Actors;
+using Hearts.Api.OpenTelemetry;
 
 namespace Hearts.Api.Workflows;
 
-class StartNewRoundActivity(IActorProxyFactory actorProxyFactory) : WorkflowActivity<StartNewRoundActivityInput, Result<StartNewRoundActivityOutput>>
+class StartNewRoundActivity(IActorProxyFactory actorProxyFactory, Instrumentation instrumentation) : WorkflowActivity<StartNewRoundActivityInput, Result<StartNewRoundActivityOutput>>
 {
     public override async Task<Result<StartNewRoundActivityOutput>> RunAsync(WorkflowActivityContext context, StartNewRoundActivityInput input)
     {
+        ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
+        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(StartNewRoundActivity), ActivityKind.Internal, activityContext);
+
         try
         {
             ActorProxyOptions actorProxyOptions = new()

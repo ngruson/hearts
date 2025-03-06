@@ -169,6 +169,8 @@
             roundPlayer.CardsToPass = [];
         }
 
+        passButtonDisabled = true;
+
         StateHasChanged();        
                 
         await SignalRService.PassCards(game!, passCards);

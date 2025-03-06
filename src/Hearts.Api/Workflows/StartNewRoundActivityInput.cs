@@ -1,3 +1,3 @@
 namespace Hearts.Api.Workflows;
 
-record StartNewRoundActivityInput(Guid GameId);
+record StartNewRoundActivityInput(string TraceId, string SpanId, Guid GameId);
