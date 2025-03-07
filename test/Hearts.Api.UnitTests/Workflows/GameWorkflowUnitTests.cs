@@ -3,6 +3,7 @@ using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
 using Dapr.Workflow;
+using Google.Api;
 using Hearts.Api.OpenTelemetry;
 using Hearts.Api.Workflows;
 using Hearts.Contracts;
@@ -95,6 +96,42 @@ public class GameWorkflowUnitTests
         await workflowContext.Received().CallActivityAsync(
             nameof(CardsPassedActivity),
             Arg.Any<CardsPassedActivityInput>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_activity_could_not_be_started(        
+        [Substitute, Frozen] WorkflowContext workflowContext,
+        GameWorkflowInput gameWorkflowInput,
+        GameWorkflow sut)
+    {
+        // Arrange
+
+        workflowContext.CallActivityAsync<Result<Game>>(
+            nameof(CreateNewGameActivity),
+            Arg.Any<CreateNewGameActivityInput>())
+        .Returns(Result.Error("Failed to create new game"));
+
+        gameWorkflowInput = gameWorkflowInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowContext, gameWorkflowInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+
+        await workflowContext.DidNotReceive().CallActivityAsync<Result<Game>>(
+            nameof(CreateNewGameActivity),
+            Arg.Any<CreateNewGameActivityInput>());
+
+        await workflowContext.DidNotReceive().CallActivityAsync(
+            nameof(NotifyGameUpdatedActivity),
+            Arg.Any<NotifyGameUpdatedActivityInput>());
     }
 
     [Theory, AutoNSubstituteData]
@@ -221,7 +258,7 @@ public class GameWorkflowUnitTests
             .Returns(Result.Success(newGame));
         }
 
-        workflowContext.CallActivityAsync<Result<Round>>(
+        workflowContext.CallActivityAsync<Result<StartNewRoundActivityOutput>>(
             nameof(StartNewRoundActivity),
             Arg.Any<StartNewRoundActivityInput>())
         .Returns(Result.Error("Failed to start new round"));

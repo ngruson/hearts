@@ -10,6 +10,8 @@ using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -55,6 +57,10 @@ public class AddBotPlayerActivityUnitTests
         AddBotPlayerActivity sut)
     {
         // Arrange
+
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Throws<Exception>();

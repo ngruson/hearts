@@ -9,6 +9,8 @@ using Hearts.Api.Actors;
 using Hearts.Api.Workflows;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -45,6 +47,10 @@ public class CardsPassedActivityUnitTests
         CardsPassedActivityInput cardsPassedActivityInput)
     {
         // Arrange
+
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<ActorProxyOptions>())
             .Throws(new Exception());

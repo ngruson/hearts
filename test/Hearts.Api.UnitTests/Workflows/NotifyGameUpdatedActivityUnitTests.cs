@@ -6,6 +6,8 @@ using Dapr.Workflow;
 using Hearts.Api.Workflows;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -45,6 +47,10 @@ public class NotifyGameUpdatedActivityUnitTests
         NotifyGameUpdatedActivity sut)
     {
         // Arrange
+
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
 
         clientCallback.GameUpdated(notifyGameUpdatedActivityInput.Game)
             .ThrowsAsync<Exception>();
