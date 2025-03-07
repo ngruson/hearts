@@ -2,4 +2,4 @@ using Hearts.Contracts;
 
 namespace Hearts.Api.Workflows;
 
-record NotifyGameUpdatedActivityInput(Game Game);
+record NotifyGameUpdatedActivityInput(string TraceId, string SpanId, Game Game);

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -9,6 +10,8 @@ using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -30,6 +33,12 @@ public class CreateNewGameActivityUnitTests
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Returns(gameActor);
 
+        createNewGameActivityInput = createNewGameActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
         Result<Game> result = await sut.RunAsync(workflowContext, createNewGameActivityInput);
@@ -49,8 +58,45 @@ public class CreateNewGameActivityUnitTests
     {
         // Arrange
 
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
+
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Throws<Exception>();
+
+        createNewGameActivityInput = createNewGameActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result<Game> result = await sut.RunAsync(workflowContext, createNewGameActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+        CreateNewGameActivityInput createNewGameActivityInput,
+        CreateNewGameActivity sut)
+    {
+        // Arrange
+
+        actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
+            .Throws<Exception>();
+
+        createNewGameActivityInput = createNewGameActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 

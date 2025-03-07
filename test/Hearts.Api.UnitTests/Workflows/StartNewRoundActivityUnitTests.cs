@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -29,6 +30,12 @@ public class StartNewRoundActivityUnitTests
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Returns(gameActor);
 
+        startNewRoundActivityInput = startNewRoundActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
         Result<StartNewRoundActivityOutput> result = await sut.RunAsync(workflowContext, startNewRoundActivityInput);
@@ -49,6 +56,12 @@ public class StartNewRoundActivityUnitTests
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Throws<Exception>();
+
+        startNewRoundActivityInput = startNewRoundActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 

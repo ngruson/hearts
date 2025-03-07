@@ -1,3 +1,3 @@
 namespace Hearts.Api.Workflows;
 
-record NotifyRoundStartedActivityInput(Contracts.Round Round);
+record NotifyRoundStartedActivityInput(string TraceId, string SpanId, Contracts.Round Round);

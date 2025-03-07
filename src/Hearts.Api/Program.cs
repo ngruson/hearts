@@ -1,6 +1,7 @@
 using Dapr.Workflow;
 using Hearts.Api;
 using Hearts.Api.Actors;
+using Hearts.Api.OpenTelemetry;
 using Hearts.Api.Workflows;
 using Hearts.ServiceDefaults;
 
@@ -29,6 +30,7 @@ builder.Services.AddDaprWorkflow(options =>
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameHub>();
 builder.Services.AddSingleton<IClientCallback, ClientCallback>();
+builder.Services.AddSingleton<Instrumentation>();
 
 builder.Services.AddCors();
 

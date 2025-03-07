@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -8,6 +9,8 @@ using Hearts.Api.Actors;
 using Hearts.Api.Workflows;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -17,13 +20,19 @@ public class CardsPassedActivityUnitTests
     internal async Task return_success_when_pass_cards_completes(
         [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
         CardsPassedActivity sut,
-        CardsPassedEvent cardsPassedEvent)
+        CardsPassedActivityInput cardsPassedActivityInput)
     {
         // Arrange
 
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
-        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedEvent);
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
 
         // Assert
 
@@ -35,16 +44,53 @@ public class CardsPassedActivityUnitTests
         [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
         [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
         CardsPassedActivity sut,
-        CardsPassedEvent cardsPassedEvent)
+        CardsPassedActivityInput cardsPassedActivityInput)
+    {
+        // Arrange
+
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
+
+        actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<ActorProxyOptions>())
+            .Throws(new Exception());
+
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+        [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
+        CardsPassedActivity sut,
+        CardsPassedActivityInput cardsPassedActivityInput)
     {
         // Arrange
 
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<ActorProxyOptions>())
             .Throws(new Exception());
 
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
         // Act
 
-        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedEvent);
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
 
         // Assert
 

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -5,6 +6,8 @@ using Dapr.Workflow;
 using Hearts.Api.Workflows;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -18,6 +21,12 @@ public class NotifyRoundStartedActivityUnitTests
         NotifyRoundStartedActivity sut)
     {
         // Arrange
+
+        notifyRoundStartedActivityInput = notifyRoundStartedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
@@ -39,8 +48,45 @@ public class NotifyRoundStartedActivityUnitTests
     {
         // Arrange
 
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
+
         clientCallback.RoundStarted(notifyRoundStartedActivityInput.Round)
             .ThrowsAsync<Exception>();
+
+        notifyRoundStartedActivityInput = notifyRoundStartedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowContext, notifyRoundStartedActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IClientCallback clientCallback,
+        NotifyRoundStartedActivityInput notifyRoundStartedActivityInput,
+        NotifyRoundStartedActivity sut)
+    {
+        // Arrange        
+
+        clientCallback.RoundStarted(notifyRoundStartedActivityInput.Round)
+            .ThrowsAsync<Exception>();
+
+        notifyRoundStartedActivityInput = notifyRoundStartedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 

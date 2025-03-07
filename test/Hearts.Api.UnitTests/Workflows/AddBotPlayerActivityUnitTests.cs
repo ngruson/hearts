@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
@@ -9,6 +10,8 @@ using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests.Workflows;
 
@@ -30,6 +33,12 @@ public class AddBotPlayerActivityUnitTests
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Returns(gameActor);
 
+        addBotPlayerActivityInput = addBotPlayerActivityInput with
+            {
+                TraceId = ActivityTraceId.CreateRandom().ToString(),
+                SpanId = ActivitySpanId.CreateRandom().ToString()
+            };
+
         // Act
 
         Result<Game> result = await sut.RunAsync(workflowContext, addBotPlayerActivityInput);
@@ -49,8 +58,45 @@ public class AddBotPlayerActivityUnitTests
     {
         // Arrange
 
+        using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("Hearts.Api")
+            .Build();
+
         actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
             .Throws<Exception>();
+
+        addBotPlayerActivityInput = addBotPlayerActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result<Game> result = await sut.RunAsync(workflowContext, addBotPlayerActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+        AddBotPlayerActivityInput addBotPlayerActivityInput,
+        AddBotPlayerActivity sut)
+    {
+        // Arrange        
+
+        actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
+            .Throws<Exception>();
+
+        addBotPlayerActivityInput = addBotPlayerActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
 
         // Act
 
