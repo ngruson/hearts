@@ -104,12 +104,7 @@ public class GameWorkflowUnitTests
         GameWorkflowInput gameWorkflowInput,
         GameWorkflow sut)
     {
-        // Arrange
-
-        workflowContext.CallActivityAsync<Result<Game>>(
-            nameof(CreateNewGameActivity),
-            Arg.Any<CreateNewGameActivityInput>())
-        .Returns(Result.Error("Failed to create new game"));
+        // Arrange        
 
         gameWorkflowInput = gameWorkflowInput with
         {
