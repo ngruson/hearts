@@ -10,7 +10,7 @@ internal class NotifyRoundStartedActivity(IClientCallback clientCallback, Instru
     public override async Task<Result> RunAsync(WorkflowActivityContext context, NotifyRoundStartedActivityInput input)
     {
         ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(NotifyGameUpdatedActivity), ActivityKind.Internal, activityContext);
+        using Activity? activity = instrumentation.StartActivity(nameof(NotifyGameUpdatedActivity), ActivityKind.Internal, activityContext);
 
         try
         {

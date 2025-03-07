@@ -28,7 +28,7 @@ public class GameHub(DaprWorkflowClient daprWorkflowClient, Instrumentation inst
             return;            
         }
 
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(CreatePlayer));
+        using Activity? activity = instrumentation.StartActivity(nameof(CreatePlayer));
 
         ActorId actorId = new(Guid.CreateVersion7().ToString());
         IPlayerActor playerActor = ActorProxy.Create<IPlayerActor>(actorId, nameof(PlayerActor));
@@ -39,7 +39,7 @@ public class GameHub(DaprWorkflowClient daprWorkflowClient, Instrumentation inst
 
     public async Task CreateNewGame(Player player)
     {        
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(CreateNewGame));
+        using Activity? activity = instrumentation.StartActivity(nameof(CreateNewGame));
 
         if (activity is null)
             return;
@@ -50,7 +50,7 @@ public class GameHub(DaprWorkflowClient daprWorkflowClient, Instrumentation inst
 
     public async Task PassCards(Guid gameId, string workflowInstanceId, PassCard[] passCards)
     {
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(PassCards));
+        using Activity? activity = instrumentation.StartActivity(nameof(PassCards));
 
         await daprWorkflowClient.RaiseEventAsync(workflowInstanceId,
             GameWorkflowEvents.CardsPassed,

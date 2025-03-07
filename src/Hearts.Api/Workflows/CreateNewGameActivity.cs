@@ -15,7 +15,7 @@ internal class CreateNewGameActivity(IActorProxyFactory actorProxyFactory, Instr
     public override async Task<Result<Game>> RunAsync(WorkflowActivityContext context, CreateNewGameActivityInput input)
     {
         ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(CreateNewGameActivity), ActivityKind.Internal, activityContext);
+        using Activity? activity = instrumentation.StartActivity(nameof(CreateNewGameActivity), ActivityKind.Internal, activityContext);
 
         try
         {

@@ -15,7 +15,7 @@ internal class AddBotPlayerActivity(IActorProxyFactory actorProxyFactory, Instru
     public override async Task<Result<Game>> RunAsync(WorkflowActivityContext context, AddBotPlayerActivityInput input)
     {
         ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(AddBotPlayerActivity), ActivityKind.Internal, activityContext);
+        using Activity? activity = instrumentation.StartActivity(nameof(AddBotPlayerActivity), ActivityKind.Internal, activityContext);
 
         try
         {

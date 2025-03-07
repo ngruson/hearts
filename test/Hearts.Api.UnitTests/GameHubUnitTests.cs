@@ -1,9 +1,12 @@
 using AutoFixture.AutoNSubstitute;
 using AutoFixture.Xunit2;
 using Dapr.Workflow;
+using Hearts.Api.Workflows;
 using Hearts.Contracts;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Hearts.Api.UnitTests;
 
@@ -54,6 +57,27 @@ public class GameHubUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task create_new_game(
+            [Substitute, Frozen] DaprWorkflowClient daprWorkflowClient,
+            GameHub sut,
+            Player player)
+        {
+            // Arrange
+
+            using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+                .AddSource("Hearts.Api")
+                .Build();
+
+            // Act
+
+            await sut.CreateNewGame(player);
+
+            // Assert
+
+            Assert.NotNull(daprWorkflowClient);
+        }
+
+        [Theory, AutoNSubstituteData]
+        internal async Task do_not_create_new_game_when_activity_is_null(
             [Substitute, Frozen] DaprWorkflowClient daprWorkflowClient,
             GameHub sut,
             Player player)

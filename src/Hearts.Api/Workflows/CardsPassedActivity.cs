@@ -14,7 +14,7 @@ public class CardsPassedActivity(IActorProxyFactory actorProxyFactory, Instrumen
     public override async Task<Result> RunAsync(WorkflowActivityContext context, CardsPassedActivityInput input)
     {
         ActivityContext activityContext = new(ActivityTraceId.CreateFromString(input.TraceId), ActivitySpanId.CreateFromString(input.SpanId), ActivityTraceFlags.Recorded);
-        using Activity? activity = instrumentation.ActivitySource.StartActivity(nameof(CardsPassedActivity), ActivityKind.Internal, activityContext);
+        using Activity? activity = instrumentation.StartActivity(nameof(CardsPassedActivity), ActivityKind.Internal, activityContext);
 
         try
         {
