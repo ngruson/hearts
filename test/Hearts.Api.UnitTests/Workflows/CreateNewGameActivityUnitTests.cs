@@ -79,4 +79,31 @@ public class CreateNewGameActivityUnitTests
 
         Assert.True(result.IsError());
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+        CreateNewGameActivityInput createNewGameActivityInput,
+        CreateNewGameActivity sut)
+    {
+        // Arrange
+
+        actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
+            .Throws<Exception>();
+
+        createNewGameActivityInput = createNewGameActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result<Game> result = await sut.RunAsync(workflowContext, createNewGameActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
 }

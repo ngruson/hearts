@@ -69,4 +69,31 @@ public class NotifyRoundStartedActivityUnitTests
 
         Assert.True(result.IsError());
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IClientCallback clientCallback,
+        NotifyRoundStartedActivityInput notifyRoundStartedActivityInput,
+        NotifyRoundStartedActivity sut)
+    {
+        // Arrange        
+
+        clientCallback.RoundStarted(notifyRoundStartedActivityInput.Round)
+            .ThrowsAsync<Exception>();
+
+        notifyRoundStartedActivityInput = notifyRoundStartedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowContext, notifyRoundStartedActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
 }

@@ -69,4 +69,31 @@ public class NotifyGameUpdatedActivityUnitTests
 
         Assert.True(result.IsError());
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] WorkflowActivityContext workflowContext,
+        [Substitute, Frozen] IClientCallback clientCallback,
+        NotifyGameUpdatedActivityInput notifyGameUpdatedActivityInput,
+        NotifyGameUpdatedActivity sut)
+    {
+        // Arrange
+
+        clientCallback.GameUpdated(notifyGameUpdatedActivityInput.Game)
+            .ThrowsAsync<Exception>();
+
+        notifyGameUpdatedActivityInput = notifyGameUpdatedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowContext, notifyGameUpdatedActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
 }

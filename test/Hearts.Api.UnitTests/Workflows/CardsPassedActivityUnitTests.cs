@@ -69,4 +69,31 @@ public class CardsPassedActivityUnitTests
 
         Assert.True(result.IsError());
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task return_error_when_exception_was_thrown_given_no_activity(
+        [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+        [Substitute, Frozen] WorkflowActivityContext workflowActivityContext,
+        CardsPassedActivity sut,
+        CardsPassedActivityInput cardsPassedActivityInput)
+    {
+        // Arrange
+
+        actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<ActorProxyOptions>())
+            .Throws(new Exception());
+
+        cardsPassedActivityInput = cardsPassedActivityInput with
+        {
+            TraceId = ActivityTraceId.CreateRandom().ToString(),
+            SpanId = ActivitySpanId.CreateRandom().ToString()
+        };
+
+        // Act
+
+        Result result = await sut.RunAsync(workflowActivityContext, cardsPassedActivityInput);
+
+        // Assert
+
+        Assert.True(result.IsError());
+    }
 }
