@@ -24,7 +24,7 @@
     [Parameter]
     public string CardSelectedStyle { get; set; } = "";
 
-    private string cardId = $"card-{Guid.NewGuid()}";    
+    private string cardId = $"card-{Guid.NewGuid()}";
 
     private string ImageUrl => FaceDown ? "/images/cards/back.svg" : $"/images/cards/{DisplayRank(Card!.Rank)}_of_{Card.Suit.ToString().ToLower()}.svg";
 

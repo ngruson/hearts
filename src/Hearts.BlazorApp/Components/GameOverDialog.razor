@@ -1,0 +1,42 @@
+@using Hearts.Contracts
+<ModalDialog Show="Show" Title="Game Over" OnClose="OnClose">
+    
+    <table class="table-auto border-collapse border border-gray-300">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border border-gray-300 px-4 py-2 text-left">Hand</th>
+                @foreach (Player player in this.Game.Players)
+                {
+                    <th class="border border-gray-300 px-4 py-2 text-left">@player.PlayerName</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Game.Rounds.Length; i++)
+            {
+                <tr>
+                    <td class="border border-gray-300 px-4 py-2">@(i + 1)</td>
+                    <td class="border border-gray-300 px-4 py-2">@Game.Rounds[i].Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[0].Id)?.Points</td>
+                    <td class="border border-gray-300 px-4 py-2">@Game.Rounds[i].Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[1].Id)?.Points</td>
+                    <td class="border border-gray-300 px-4 py-2">@Game.Rounds[i].Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[2].Id)?.Points</td>
+                    <td class="border border-gray-300 px-4 py-2">@Game.Rounds[i].Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[3].Id)?.Points</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="bg-gray-200">
+                <td class="border border-gray-300 px-4 py-2 text-left">Total</td>
+                <td class="border border-gray-300 px-4 py-2 text-left">@Game.Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[0].Id)?.Points</td>
+                <td class="border border-gray-300 px-4 py-2 text-left">@Game.Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[1].Id)?.Points</td>
+                <td class="border border-gray-300 px-4 py-2 text-left">@Game.Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[2].Id)?.Points</td>
+                <td class="border border-gray-300 px-4 py-2 text-left">@Game.Scores?.SingleOrDefault(_ => _.PlayerId == Game.Players[3].Id)?.Points</td>
+            </tr>
+        </tfoot>
+    </table>    
+</ModalDialog>
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public required Game Game { get; set; }
+}

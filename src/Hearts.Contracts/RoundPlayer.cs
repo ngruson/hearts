@@ -13,6 +13,6 @@ public class RoundPlayer(Player player, Card[] cards, Card[] cardsToPass)
 
     public void RemoveCard(Card card)
     {
-        this.Cards = [.. this.Cards.Where(c => c != card)];
+        this.Cards = [.. this.Cards.Where(c => c.Suit != card.Suit && c.Rank != card.Rank)];
     }
 }

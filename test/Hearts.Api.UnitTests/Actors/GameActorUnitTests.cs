@@ -19,11 +19,11 @@ public class GameActorUnitTests
 
         await sut.AddPlayer(player);
 
-        List<Player> players = await sut.Players;
+        Game game = await sut.Map();
 
         // Assert
 
-        Assert.Contains(player, players);
+        Assert.Contains(player, game.Players);
     }
 
     [Fact]
@@ -41,11 +41,11 @@ public class GameActorUnitTests
             await sut.AddBotPlayer();
         }
 
-        List<Player> players = await sut.Players;
+        Game game = await sut.Map();
 
         // Assert
 
-        Assert.Equal(4, players.Count);
+        Assert.Equal(4, game.Players.Length);
     }
 
     public class StartNewRound
@@ -65,15 +65,17 @@ public class GameActorUnitTests
                 await sut.AddBotPlayer();
             }
 
-            Contracts.Round round = await sut.StartNewRound();
+            await sut.StartRound();
+
+            Game game = await sut.Map();
 
             // Assert
 
-            Assert.Equal(4, round.Players.Length);
+            Assert.Equal(4, game.CurrentRound?.Players.Length);
 
             for (int i = 0; i < 4; i++)
             {
-                Assert.Equal(13, round.Players.ElementAt(i).Cards.Length);
+                Assert.Equal(13, game.CurrentRound?.Players.ElementAt(i).Cards.Length);
             }
         }
 
@@ -85,7 +87,7 @@ public class GameActorUnitTests
             ActorHost host = ActorHost.CreateForTest<GameActor>();
             GameActor sut = new(host);
 
-            await sut.StartNewRound();
+            await sut.StartRound();
 
             // Act
 
@@ -94,15 +96,17 @@ public class GameActorUnitTests
                 await sut.AddBotPlayer();
             }
 
-            Contracts.Round round = await sut.StartNewRound();
+            await sut.StartRound();
+
+            Game game = await sut.Map();
 
             // Assert
 
-            Assert.Equal(4, round.Players.Length);
+            Assert.Equal(4, game.CurrentRound?.Players.Length);
 
             for (int i = 0; i < 4; i++)
             {
-                Assert.Equal(13, round.Players.ElementAt(i).Cards.Length);
+                Assert.Equal(13, game.CurrentRound?.Players.ElementAt(i).Cards.Length);
             }
         }
 
@@ -114,8 +118,8 @@ public class GameActorUnitTests
             ActorHost host = ActorHost.CreateForTest<GameActor>();
             GameActor sut = new(host);
 
-            await sut.StartNewRound();
-            await sut.StartNewRound();
+            await sut.StartRound();
+            await sut.StartRound();
 
             // Act
 
@@ -124,15 +128,17 @@ public class GameActorUnitTests
                 await sut.AddBotPlayer();
             }
 
-            Contracts.Round round = await sut.StartNewRound();
+            await sut.StartRound();
+
+            Game game = await sut.Map();
 
             // Assert
 
-            Assert.Equal(4, round.Players.Length);
+            Assert.Equal(4, game.CurrentRound?.Players.Length);
 
             for (int i = 0; i < 4; i++)
             {
-                Assert.Equal(13, round.Players.ElementAt(i).Cards.Length);
+                Assert.Equal(13, game.CurrentRound?.Players.ElementAt(i).Cards.Length);
             }
         }
 
@@ -144,9 +150,9 @@ public class GameActorUnitTests
             ActorHost host = ActorHost.CreateForTest<GameActor>();
             GameActor sut = new(host);
 
-            await sut.StartNewRound();
-            await sut.StartNewRound();
-            await sut.StartNewRound();
+            await sut.StartRound();
+            await sut.StartRound();
+            await sut.StartRound();
 
             // Act
 
@@ -155,21 +161,23 @@ public class GameActorUnitTests
                 await sut.AddBotPlayer();
             }
 
-            Contracts.Round round = await sut.StartNewRound();
+            await sut.StartRound();
+
+            Game game = await sut.Map();
 
             // Assert
 
-            Assert.Equal(4, round.Players.Length);
+            Assert.Equal(4, game.CurrentRound?.Players.Length);
 
             for (int i = 0; i < 4; i++)
             {
-                Assert.Equal(13, round.Players.ElementAt(i).Cards.Length);
+                Assert.Equal(13, game.CurrentRound?.Players.ElementAt(i).Cards.Length);
             }
         }        
     }
 
-    [Theory, AutoNSubstituteData]
-    internal async Task map(string workflowInstanceId)
+    [Fact]
+    internal async Task map()
     {
         // Arrange
 
@@ -178,7 +186,7 @@ public class GameActorUnitTests
 
         // Act            
 
-        Game game = await sut.Map(workflowInstanceId);
+        Game game = await sut.Map();
 
         // Assert
 
@@ -198,7 +206,7 @@ public class GameActorUnitTests
 
         await sut.AddPlayer(player1);
         await sut.AddPlayer(player2);
-        await sut.StartNewRound();
+        await sut.StartRound();
 
         passCards[0] = passCards[0] with { FromPlayerId = player1.Id };
         passCards[0] = passCards[0] with { ToPlayerId = player2.Id };

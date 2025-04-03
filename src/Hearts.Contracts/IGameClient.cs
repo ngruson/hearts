@@ -1,3 +1,5 @@
+using Hearts.Contracts.Events;
+
 namespace Hearts.Contracts;
 
 public interface IGameClient
@@ -7,11 +9,14 @@ public interface IGameClient
 
     Task CreateNewGame();
     Task GameUpdated(Game game);
+    Task InvalidCardPlayed(InvalidCardPlayedEvent invalidCardPlayedEvent);
 
-    Task StartGame();
-    Task GameStarted(Game game);
+    //Task StartGame();
+    //Task GameStarted(Game game);
 
-    Task RoundStarted(Round round);
+    //Task RoundUpdated(Round round);
 
     Task PassCards(Guid gameId, PassCard[] passCards);
+    Task PlayCard(Guid gameId, Guid playerId, Card card);
+    Task TrickCompleted(Game game);
 }

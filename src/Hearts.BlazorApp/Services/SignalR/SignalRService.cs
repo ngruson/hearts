@@ -1,5 +1,6 @@
 using Hearts.BlazorApp.Services.SignalR;
 using Hearts.Contracts;
+using Hearts.Contracts.Events;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Hearts.BlazorApp.Services.SignalR;
@@ -13,7 +14,7 @@ public class SignalRService
 
     public event EventHandler<Player>? PlayerCreated;
     public event EventHandler<Game>? GameUpdated;
-    public event EventHandler<Round>? RoundStarted;
+    public event EventHandler<InvalidCardPlayedEvent>? InvalidCardPlayed;
 
     public SignalRService(HubConnection hubConnection)
     {
@@ -26,7 +27,7 @@ public class SignalRService
         });
 
         this.hubConnection.On<Game>(nameof(IGameClient.GameUpdated), this.OnGameUpdated);
-        this.hubConnection.On<Round>(nameof(IGameClient.RoundStarted), this.OnRoundStarted);
+        this.hubConnection.On<InvalidCardPlayedEvent>(nameof(IGameClient.InvalidCardPlayed), this.OnInvalidCardPlayed);
     }
 
     private void OnPlayerCreated(Player player)
@@ -44,9 +45,9 @@ public class SignalRService
         GameUpdated?.Invoke(this, game);
     }
 
-    private void OnRoundStarted(Round round)
+    private void OnInvalidCardPlayed(InvalidCardPlayedEvent invalidCardPlayedEvent)
     {
-        RoundStarted?.Invoke(this, round);
+        InvalidCardPlayed?.Invoke(this, invalidCardPlayedEvent);
     }
 
     public async Task CreateNewGame(Player player)
@@ -54,9 +55,14 @@ public class SignalRService
         await this.hubConnection.SendAsync(nameof(IGameClient.CreateNewGame), player);
     }
 
-    public async Task PassCards(Game game, PassCard[] passCards)
+    public async Task PassCards(Game game, PassCard[]? passCards)
     {
-        await this.hubConnection.SendAsync(nameof(IGameClient.PassCards), game.Id, game.WorkflowInstanceId, passCards);
+        await this.hubConnection.SendAsync(nameof(IGameClient.PassCards), game.Id, passCards);
+    }
+
+    public async Task PlayCard(Game game, RoundPlayer roundPlayer, Card card)
+    {
+        await this.hubConnection.SendAsync(nameof(IGameClient.PlayCard), game.Id, roundPlayer.Player.Id, card);
     }
 
     public async Task StartAsync()
