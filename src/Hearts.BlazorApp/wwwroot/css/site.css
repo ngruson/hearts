@@ -686,9 +686,6 @@
   .w-40 {
     width: calc(var(--spacing) * 40);
   }
-  .w-96 {
-    width: calc(var(--spacing) * 96);
-  }
   .w-100 {
     width: calc(var(--spacing) * 100);
   }
@@ -792,9 +789,6 @@
   }
   .bg-blue-800 {
     background-color: var(--color-blue-800);
-  }
-  .bg-gray-100 {
-    background-color: var(--color-gray-100);
   }
   .bg-gray-200 {
     background-color: var(--color-gray-200);

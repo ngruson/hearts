@@ -164,12 +164,10 @@ public class GameHub : Hub<IGameClient>
                 }
                 else if (trick?.IsCompleted == true)
                 {
-                    await Task.Delay(2000);
                     game = await gameActor.Map();
                     await this.NotifyGameUpdated(activity, game);
 
                     await this.StartTrick(gameActor);
-                    await gameActor.PlayBots();
                     game = await gameActor.Map();
                     await this.NotifyGameUpdated(activity, game);
                 }

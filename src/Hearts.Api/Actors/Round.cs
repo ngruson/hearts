@@ -5,6 +5,7 @@ namespace Hearts.Api.Actors;
 
 public class Round
 {
+    public Trick? CurrentTrick => this.Tricks.LastOrDefault();
     public Guid GameId { get; set; }
     public bool IsCompleted => this.Tricks.Length == 13 && this.Tricks.All(_ => _.IsCompleted);
     public bool IsHeartsBroken { get; set; }
@@ -32,10 +33,9 @@ public class Round
     }
 
     internal void ChangePlayerTurn()
-    {
-        Trick trick = this.Tricks.Last();
-        RoundPlayer roundPlayer = this.Players[(Array.IndexOf(this.Players, this.Players.First(_ => _.Player.Id == trick.PlayerTurn?.Player.Id)) + 1) % this.Players.Length];
-        trick.SetPlayerTurn(roundPlayer);
+    {        
+        RoundPlayer roundPlayer = this.Players[(Array.IndexOf(this.Players, this.Players.First(_ => _.Player.Id == this.CurrentTrick?.PlayerTurn?.Player.Id)) + 1) % this.Players.Length];
+        this.CurrentTrick?.SetPlayerTurn(roundPlayer);
     }
 
     internal Contracts.Round Map()
@@ -66,34 +66,27 @@ public class Round
 
     internal void PlayBots()
     {
-        Trick? trick = this.Tricks.Last();
-
-        while (trick!.PlayerTurn!.Player.IsBot && trick.PlayerTurn.Cards.Length > 0 && trick.IsCompleted is false)
+        while (this.CurrentTrick?.PlayerTurn?.Player.IsBot == true && this.CurrentTrick?.PlayerTurn.Cards.Length > 0 && this.CurrentTrick?.IsCompleted is false)
         {
-            Card? card = trick.PlayerTurn.SelectCardToPlay(trick, this.IsHeartsBroken);
-            this.PlayCard(trick.PlayerTurn.Player.Id, card!);
+            Card? card = this.CurrentTrick?.PlayerTurn.SelectCardToPlay(this.CurrentTrick, this.IsHeartsBroken);
+            this.PlayCard(this.CurrentTrick!.PlayerTurn.Player.Id, card!);
         }
     }
 
     internal void PlayCard(Guid playerId, Card card)
     {
-        Trick? trick = this.Tricks.Last();
         RoundPlayer? roundPlayer = this.Players.First(p => p.Player.Id == playerId);
 
-        roundPlayer?.PlayCard(card, trick);
+        roundPlayer?.PlayCard(card, this.CurrentTrick);
 
         if (this.IsHeartsBroken is false && card?.Suit == Suit.Hearts)
         {
             this.IsHeartsBroken = true;
         }
 
-        trick?.CheckCompleted();
+        this.CurrentTrick?.CheckCompleted();
 
-        if (trick?.IsCompleted == true)
-        {
-            //this.StartTrick();
-        }
-        else
+        if (this.CurrentTrick?.IsCompleted == false)
         {
             this.ChangePlayerTurn();
         }
@@ -105,11 +98,9 @@ public class Round
 
         if (this.Tricks.Length > 0)
         {
-            Trick prevTrick = this.Tricks.Last();
-
             trick = Trick.Create(
                 [.. this.Players.Select(_ => _.Player)],
-                this.Players.Single(_ => _.Player.Id == prevTrick.Winner?.Id),
+                this.Players.Single(_ => _.Player.Id == this.CurrentTrick?.Winner?.Id),
                 null);
         }
         else
@@ -125,22 +116,21 @@ public class Round
 
     internal Result ValidateCard(Card card)
     {
-        Trick? trick = this.Tricks.LastOrDefault();
-        if (trick is null)
+        if (this.CurrentTrick is null)
         {
             return Result.Invalid(new ValidationError("Trick is null"));
         }
 
-        if (this.Tricks.Length == 1 && trick.TrickCards.Length == 0 && !(card.Suit == Suit.Clubs && card.Rank == Rank.Two))
+        if (this.Tricks.Length == 1 && this.CurrentTrick.TrickCards.Length == 0 && !(card.Suit == Suit.Clubs && card.Rank == Rank.Two))
         {
             return Result.Invalid(new ValidationError("The 2 of clubs must be played on the first trick"));
         }
 
-        RoundPlayer? roundPlayer = this.Players.First(p => p.Player.Id == trick.PlayerTurn?.Player.Id);
+        RoundPlayer? roundPlayer = this.Players.First(p => p.Player.Id == this.CurrentTrick.PlayerTurn?.Player.Id);
 
-        if (roundPlayer.Cards.Any(_ => _.Suit == trick.Suit) && card.Suit != trick.Suit)
+        if (roundPlayer.Cards.Any(_ => _.Suit == this.CurrentTrick.Suit) && card.Suit != this.CurrentTrick.Suit)
         {
-            return Result.Invalid(new ValidationError($"The suit of the current trick is {trick.Suit.ToString()?.ToLower()}"));
+            return Result.Invalid(new ValidationError($"The suit of the current trick is {this.CurrentTrick.Suit.ToString()?.ToLower()}"));
         }
 
         if (this.Tricks.Length == 1 && card.Suit == Suit.Hearts)
@@ -148,7 +138,7 @@ public class Round
             return Result.Invalid(new ValidationError("Hearts cannot be played on the first trick"));
         }
 
-        if ((this.Tricks.Length == 1 || trick.TrickCards.Length == 0)
+        if ((this.Tricks.Length == 1 || this.CurrentTrick.TrickCards.Length == 0)
             && roundPlayer.Cards.Any(_ => _.Suit != Suit.Hearts)
             && this.IsHeartsBroken is false
             && card.Suit == Suit.Hearts)
