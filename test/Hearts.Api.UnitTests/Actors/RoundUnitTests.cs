@@ -1,6 +1,5 @@
 using Ardalis.Result;
 using Hearts.Api.Actors;
-using static Hearts.Api.UnitTests.Actors.RoundUnitTests;
 
 namespace Hearts.Api.UnitTests.Actors;
 
@@ -43,6 +42,31 @@ public class RoundUnitTests
             // Assert
 
             Assert.Empty(sut.Tricks);
+        }
+    }
+
+    public class Create
+    {
+        [Theory, AutoNSubstituteData]
+        internal void create_round_with_queen_of_spades(
+            Guid gameId,
+            Contracts.Player[] players)
+        {
+            // Arrange
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                players[0] = players[0] with { IsBot = true };
+            }
+
+            // Act
+
+            Round result = Round.Create(gameId, players, true);
+
+            // Assert
+
+            Assert.Equal(gameId, result.GameId);
+            Assert.Equal(players.Length, result.Players.Length);
         }
     }
 
