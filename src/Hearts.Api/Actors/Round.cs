@@ -40,7 +40,7 @@ public class Round
         }
 
         RoundPlayer roundPlayer = this.Players[(Array.IndexOf(this.Players, this.Players.First(_ => _.Player.Id == this.CurrentTrick?.PlayerTurn?.Player.Id)) + 1) % this.Players.Length];
-        this.CurrentTrick?.SetPlayerTurn(roundPlayer);
+        this.CurrentTrick.SetPlayerTurn(roundPlayer);
     }
 
     internal Contracts.Round Map()
@@ -71,15 +71,25 @@ public class Round
 
     internal void PlayBots()
     {
-        while (this.CurrentTrick?.PlayerTurn?.Player.IsBot == true && this.CurrentTrick?.PlayerTurn.Cards.Length > 0 && this.CurrentTrick?.IsCompleted is false)
+        if (this.CurrentTrick is null)
         {
-            Card? card = this.CurrentTrick?.PlayerTurn.SelectCardToPlay(this.CurrentTrick, this.IsHeartsBroken);
-            this.PlayCard(this.CurrentTrick!.PlayerTurn.Player.Id, card!);
+            return;
+        }
+
+        while (this.CurrentTrick.PlayerTurn?.Player.IsBot == true && this.CurrentTrick.PlayerTurn.Cards.Length > 0 && this.CurrentTrick.IsCompleted is false)
+        {
+            Card? card = this.CurrentTrick.PlayerTurn.SelectCardToPlay(this.CurrentTrick, this.IsHeartsBroken);
+            this.PlayCard(this.CurrentTrick.PlayerTurn.Player.Id, card!);
         }
     }
 
     internal void PlayCard(Guid playerId, Card card)
     {
+        if (this.CurrentTrick is null)
+        {
+            return;
+        }
+
         RoundPlayer? roundPlayer = this.Players.SingleOrDefault(p => p.Player.Id == playerId);
 
         roundPlayer?.PlayCard(card, this.CurrentTrick);
@@ -89,9 +99,9 @@ public class Round
             this.IsHeartsBroken = true;
         }
 
-        this.CurrentTrick?.CheckCompleted();
+        this.CurrentTrick.CheckCompleted();
 
-        if (this.CurrentTrick?.IsCompleted == false)
+        if (this.CurrentTrick.IsCompleted == false)
         {
             this.ChangePlayerTurn();
         }
