@@ -76,7 +76,7 @@ public class GameActorUnitTests
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host);            
 
             foreach (Player player in players)
             {
@@ -84,6 +84,12 @@ public class GameActorUnitTests
             }
 
             await sut.StartRound();
+
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == Suit.Clubs && _.Rank == Rank.Two)))
+            {
+                sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
+            }
+            
             await sut.StartTrick();
 
             Api.Actors.RoundPlayer? turn = sut.CurrentRound?.CurrentTrick?.PlayerTurn;
