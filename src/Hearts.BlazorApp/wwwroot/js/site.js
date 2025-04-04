@@ -7,3 +7,46 @@ window.moveCardAnimation = (cardId) => {
         }, 1000);
     }
 };
+
+window.setTextContent = (element, text) => {
+    element.textContent = text;
+};
+
+function getElementPosition(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        return null;
+    }
+    const rect = element.getBoundingClientRect();
+    return { top: rect.top, left: rect.left };
+}
+
+function moveCardsToWinner() {
+    const trickCards = getAllImagesInCenterArea();
+    const winner = document.getElementById("tricks");
+
+    if (trickCards.length === 0 || !winner) {
+        return;
+    }
+
+    // Get the winner's position
+    const winnerRect = winner.getBoundingClientRect();
+
+    const offsetX = winnerRect.left;
+    const offsetY = winnerRect.top;
+
+    // Move cards to winner
+    for (let card of trickCards) {
+        card.style.position = 'absolute';
+        card.style.top = `${offsetY}px`;
+        card.style.left = `${offsetX}px`;
+    }
+}
+
+function getAllImagesInCenterArea() {
+    const centerArea = document.getElementById('center-area');
+    if (!centerArea) {
+        return [];
+    }
+    return centerArea.getElementsByTagName('img');
+}

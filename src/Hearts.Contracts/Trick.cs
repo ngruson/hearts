@@ -1,5 +1,3 @@
 namespace Hearts.Contracts;
 
-public class Trick()
-{
-}
+public record Trick(Player[] Players, TrickCard[] TrickCards, Suit? Suit, Turn? Turn, bool IsCompleted, Guid? Winner);

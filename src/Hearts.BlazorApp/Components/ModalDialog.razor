@@ -1,5 +1,26 @@
-﻿<h3>ModalDialog</h3>
+<div class="@ModalClass fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 @(Show == false ? "hidden" : "")">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl">@Title</h3>
+        <div>
+            @ChildContent
+        </div>
+        <div class="flex items-center justify-center">
+            <button class="mt-4 bg-green-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-green-700" @onclick="Close">Close</button>
+        </div>
+    </div>
+</div>
 
 @code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public required string Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    private void Close()
+    {
+        Show = false;
+        OnClose.InvokeAsync(false);
+    }
+
+    private string ModalClass => Show ? "modal-open" : "modal-closed";
 }

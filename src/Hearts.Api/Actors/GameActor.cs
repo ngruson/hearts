@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using Dapr.Actors.Runtime;
 using Hearts.Contracts;
 
@@ -5,44 +6,130 @@ namespace Hearts.Api.Actors;
 
 internal class GameActor(ActorHost host) : Actor(host), IGameActor
 {
-    private readonly List<Player> players = [];
-    private readonly List<Round> rounds = [];
-    private PassingDirection PassingDirection = PassingDirection.None;
+    public Round? CurrentRound => this.Rounds.LastOrDefault();
+    public PassingDirection PassingDirection { get; set; } = PassingDirection.None;
+    public Player[] Players { get; set; } = [];
+    public Round[] Rounds { get; set; } = [];
+    public PlayerScore[] Scores => this.CalculateScore();
+    public bool IsCompleted => this.Scores.Any(_ => _.Points >= 100)
+        && this.Rounds.All(_ => _.IsCompleted)
+        && this.Scores.GroupBy(score => score.Points).All(group => group.Count() == 1);
 
-    public Task<List<Player>> Players => Task.FromResult(this.players);
-
-    public Task AddPlayer(Player player)
+    public async Task AddBotPlayer()
     {
-        this.players.Add(player);
-        return Task.CompletedTask;
-    }
-
-    public Task AddBotPlayer()
-    {
-        //Thread.Sleep(1000);
-
         Guid playerId = Guid.CreateVersion7();
 
         string playerName;
         do
         {
             playerName = RandomNameGenerator.GenerateRandomName();
-        } while (this.players.Any(p => p.PlayerName == playerName));
+        }
+        while (this.Players.Any(p => p.PlayerName == playerName));
 
-        BotPlayer player = new(playerId, playerName);
-        this.players.Add(player);
+        Player player = new(playerId, playerName, true);
+        await this.AddPlayer(player);
+    }
+
+    public Task AddPlayer(Player player)
+    {
+        this.Players = [.. this.Players, player];
+        return Task.CompletedTask;
+    }
+
+    public Task ChangePlayerTurn()
+    {
+        this.CurrentRound?.ChangePlayerTurn();
+        return Task.CompletedTask;
+    }
+
+    public Task<Game> Map()
+    {
+        string? message = null;
+
+        if (this.CurrentRound?.SelectingCards == true)
+        {
+            message = "Select 3 cards to pass to ";
+        }
+
+        Game game = new(
+            Guid.Parse(this.Id.GetId()),
+            [.. this.Players],            
+            [.. this.Rounds.Select(_ => _.Map())],
+            [.. this.Scores.Select(_ => _.Map())],            
+            this.PassingDirection,
+            this.IsCompleted,
+            message);
+
+        return Task.FromResult(game);
+    }
+
+    public Task PassCards(PassCard[] passCards)
+    {
+        if (this.CurrentRound is not null && this.PassingDirection != PassingDirection.None)
+        {
+            this.CurrentRound.PassCards(passCards);
+        }
+        
+        return Task.CompletedTask;
+    }
+
+    public Task PlayBots()
+    {
+        this.CurrentRound?.PlayBots();
+        
+        return Task.CompletedTask;
+    }
+
+    public async Task PlayCard(Guid playerId, Card card)
+    {
+        this.CurrentRound?.PlayCard(playerId, card);
+        
+        await Task.CompletedTask;
+    }
+
+    public Task StartRound()
+    {
+        this.ChangePassingDirection();
+
+        Round round = Round.Create(
+            Guid.Parse(this.Id.GetId()),
+            [.. this.Players],
+            this.PassingDirection != PassingDirection.None);
+
+        this.Rounds = [.. this.Rounds, round];
 
         return Task.CompletedTask;
     }
 
-    public Task<Contracts.Round> StartNewRound()
+    public Task StartTrick()
     {
-        Round round = Round.Create([.. this.players]);
-        this.rounds.Add(round);
+        this.CurrentRound?.StartTrick();
         
-        this.ChangePassingDirection();
+        return Task.CompletedTask;
+    }
 
-        return Task.FromResult(round.Map());
+    public Task<Result> ValidateCard(Card card)
+    {
+        if (this.CurrentRound == null)
+        {
+            return Task.FromResult(Result.Invalid(new ValidationError("Game has not started")));
+        }
+
+        Result validationResult = this.CurrentRound.ValidateCard(card);
+
+        return Task.FromResult(validationResult);
+    }
+
+    private PlayerScore[] CalculateScore()
+    {
+        return [.. this.Rounds
+            .Where(round => round.Scores != null)
+            .SelectMany(round => round.Scores!)
+            .GroupBy(score => score.PlayerId)
+            .Select(group => new PlayerScore(
+                group.Key,
+                this.Players.Single(player => player.Id == group.Key).PlayerName,
+                group.Sum(score => score.Points)))];
     }
 
     private void ChangePassingDirection()
@@ -62,31 +149,5 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
                 this.PassingDirection = PassingDirection.Left;
                 break;
         }
-    }
-
-    public Task<Game> Map(string workflowInstanceId)
-    {
-        Game game = new(
-            Guid.Parse(this.Id.GetId()),
-            workflowInstanceId,
-            [.. this.players],
-            this.PassingDirection);
-
-        return Task.FromResult(game);
-    }
-
-    public Task PassCards(PassCard[] passCards)
-    {
-        Round round = this.rounds[0];
-
-        foreach (PassCard passCard in passCards)
-        {
-            RoundPlayer fromPlayer = round.Players.Single(p => p.Player.Id == passCard.FromPlayerId);
-            RoundPlayer toPlayer = round.Players.Single(p => p.Player.Id == passCard.ToPlayerId);
-            fromPlayer.Cards = [.. fromPlayer.Cards.Where(_ => _.Suit != passCard.Card.Suit && _.Rank != passCard.Card.Rank)];
-            toPlayer.Cards = [.. toPlayer.Cards, passCard.Card];
-        }
-
-        return Task.CompletedTask;
     }
 }

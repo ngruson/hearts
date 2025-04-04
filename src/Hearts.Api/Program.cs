@@ -1,8 +1,6 @@
-using Dapr.Workflow;
 using Hearts.Api;
 using Hearts.Api.Actors;
 using Hearts.Api.OpenTelemetry;
-using Hearts.Api.Workflows;
 using Hearts.ServiceDefaults;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -15,21 +13,8 @@ builder.Services.AddActors(options =>
     options.UseJsonSerialization = true;
 });
 
-builder.Services.AddDaprWorkflow(options =>
-{
-    options.RegisterWorkflow<GameWorkflow>();
-
-    options.RegisterActivity<AddBotPlayerActivity>();
-    options.RegisterActivity<CardsPassedActivity>();
-    options.RegisterActivity<CreateNewGameActivity>();
-    options.RegisterActivity<NotifyGameUpdatedActivity>();
-    options.RegisterActivity<NotifyRoundStartedActivity>();    
-    options.RegisterActivity<StartNewRoundActivity>();
-});
-
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameHub>();
-builder.Services.AddSingleton<IClientCallback, ClientCallback>();
 builder.Services.AddSingleton<Instrumentation>();
 
 builder.Services.AddCors();
