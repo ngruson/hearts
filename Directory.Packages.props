@@ -35,7 +35,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="7.2.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.2.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.42" />
   </ItemGroup>
