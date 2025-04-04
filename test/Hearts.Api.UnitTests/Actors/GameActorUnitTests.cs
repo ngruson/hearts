@@ -236,13 +236,22 @@ public class GameActorUnitTests
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
             GameActor sut = new(host);
+
             await sut.AddPlayer(player);
             await sut.StartRound();
+
             if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == Suit.Clubs && _.Rank == Rank.Two)))
             {
                 sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
             }
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == card.Suit && _.Rank == card.Rank)))
+            {
+                sut.CurrentRound!.Players[0].Cards[1] = card;
+            }
+            
             await sut.StartTrick();
+
+            //sut.CurrentRound!.CurrentTrick!.PlayerTurn = sut.CurrentRound.Players[0];
 
             // Act
 
@@ -400,12 +409,11 @@ public class GameActorUnitTests
         }
     }
 
-    public class ValidateCard
+    public class StartTrick
     {
         [Theory, AutoNSubstituteData]
-        internal async Task return_success_when_played_card_is_valid(
-            Player[] players,
-            Card card)
+        internal async Task start_trick_when_current_round_is_not_null(
+            Player[] players)
         {
             // Arrange
 
@@ -424,10 +432,67 @@ public class GameActorUnitTests
                 sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
             }
 
+            // Act
+
+            await sut.StartTrick();
+
+            // Assert
+
+            Assert.NotNull(sut.CurrentRound?.CurrentTrick);
+        }
+
+        [Fact]
+        internal async Task do_not_start_trick_when_current_round_is_null()
+        {
+            // Arrange
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+
+            // Act
+
+            await sut.StartTrick();
+
+            // Assert
+
+            Assert.Null(sut.CurrentRound);
+        }
+    }
+
+    public class ValidateCard
+    {
+        [Theory, AutoNSubstituteData]
+        internal async Task return_success_when_played_card_is_valid(
+            Player[] players)
+        {
+            // Arrange
+
+            Card card = new(Suit.Clubs, Rank.Two);
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+
+            foreach (Player player in players)
+            {
+                await sut.AddPlayer(player);
+            }
+
+            await sut.StartRound();
+
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == Suit.Clubs && _.Rank == Rank.Two)))
+            {
+                sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
+            }
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == card.Suit && _.Rank == card.Rank)))
+            {
+                sut.CurrentRound!.Players[0].Cards[1] = card;
+            }
+
             await sut.StartTrick();
 
             // Act
 
+            
             Result result = await sut.ValidateCard(card);
 
             // Assert

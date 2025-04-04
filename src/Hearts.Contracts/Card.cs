@@ -1,7 +1,7 @@
 namespace Hearts.Contracts;
 
-public class Card(Suit suit, Rank rank)
-{
-    public Suit Suit => suit;
-    public Rank Rank => rank;
-}
+public record Card(Suit Suit, Rank Rank);
+//{
+    //public Suit Suit => suit;
+    //public Rank Rank => rank;
+//}

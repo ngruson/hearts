@@ -33,7 +33,12 @@ public class Round
     }
 
     internal void ChangePlayerTurn()
-    {        
+    {
+        if (this.CurrentTrick is null)
+        {
+            return;
+        }
+
         RoundPlayer roundPlayer = this.Players[(Array.IndexOf(this.Players, this.Players.First(_ => _.Player.Id == this.CurrentTrick?.PlayerTurn?.Player.Id)) + 1) % this.Players.Length];
         this.CurrentTrick?.SetPlayerTurn(roundPlayer);
     }
@@ -75,7 +80,7 @@ public class Round
 
     internal void PlayCard(Guid playerId, Card card)
     {
-        RoundPlayer? roundPlayer = this.Players.First(p => p.Player.Id == playerId);
+        RoundPlayer? roundPlayer = this.Players.SingleOrDefault(p => p.Player.Id == playerId);
 
         roundPlayer?.PlayCard(card, this.CurrentTrick);
 
@@ -126,7 +131,7 @@ public class Round
             return Result.Invalid(new ValidationError("The 2 of clubs must be played on the first trick"));
         }
 
-        RoundPlayer? roundPlayer = this.Players.First(p => p.Player.Id == this.CurrentTrick.PlayerTurn?.Player.Id);
+        RoundPlayer roundPlayer = this.Players.First(p => p.Player.Id == this.CurrentTrick.PlayerTurn?.Player.Id);
 
         if (roundPlayer.Cards.Any(_ => _.Suit == this.CurrentTrick.Suit) && card.Suit != this.CurrentTrick.Suit)
         {
@@ -138,7 +143,7 @@ public class Round
             return Result.Invalid(new ValidationError("Hearts cannot be played on the first trick"));
         }
 
-        if ((this.Tricks.Length == 1 || this.CurrentTrick.TrickCards.Length == 0)
+        if ((this.Tricks.Length > 1 && this.CurrentTrick.TrickCards.Length == 0)
             && roundPlayer.Cards.Any(_ => _.Suit != Suit.Hearts)
             && this.IsHeartsBroken is false
             && card.Suit == Suit.Hearts)
