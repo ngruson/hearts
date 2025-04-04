@@ -65,9 +65,9 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
 
     public Task PassCards(PassCard[] passCards)
     {
-        if (this.PassingDirection != PassingDirection.None)
+        if (this.CurrentRound is not null && this.PassingDirection != PassingDirection.None)
         {
-            this.CurrentRound?.PassCards(passCards);
+            this.CurrentRound.PassCards(passCards);
         }
         
         return Task.CompletedTask;
@@ -75,13 +75,21 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
 
     public Task PlayBots()
     {
-        this.CurrentRound?.PlayBots();
+        if (this.CurrentRound is not null)
+        {
+            this.CurrentRound?.PlayBots();
+        }
+        
         return Task.CompletedTask;
     }
 
     public async Task PlayCard(Guid playerId, Card card)
     {
-        this.CurrentRound?.PlayCard(playerId, card);
+        if (this.CurrentRound is not null)
+        {
+            this.CurrentRound?.PlayCard(playerId, card);
+        }
+        
         await Task.CompletedTask;
     }
 
@@ -101,7 +109,11 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
 
     public Task StartTrick()
     {
-        this.CurrentRound?.StartTrick();
+        if (this.CurrentRound is not null)
+        {
+            this.CurrentRound.StartTrick();
+        }
+        
         return Task.CompletedTask;
     }
 

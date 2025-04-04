@@ -56,7 +56,9 @@ public class GameActorUnitTests
         ActorHost host = ActorHost.CreateForTest<GameActor>();
         GameActor sut = new(host);
 
-        // Act            
+        await sut.StartRound();
+
+        // Act
 
         Game game = await sut.Map();
 
@@ -330,7 +332,7 @@ public class GameActorUnitTests
     public class ValidateCard
     {
         [Theory, AutoNSubstituteData]
-        internal async Task return_invalid_when_current_round_is_null(
+        internal async Task return_success_when_played_card_is_valid(
             Player[] players,
             Card card)
         {
@@ -354,6 +356,24 @@ public class GameActorUnitTests
             // Assert
 
             Assert.True(result.IsSuccess);
+        }
+
+        [Theory, AutoNSubstituteData]
+        internal async Task return_invalid_when_current_round_is_null(
+            Card card)
+        {
+            // Arrange
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+
+            // Act
+
+            Result result = await sut.ValidateCard(card);
+
+            // Assert
+
+            Assert.True(result.IsInvalid());
         }
     }
 }
