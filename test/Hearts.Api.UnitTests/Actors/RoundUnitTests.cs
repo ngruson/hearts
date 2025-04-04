@@ -54,19 +54,22 @@ public class RoundUnitTests
         {
             // Arrange
 
+            players = [.. players, players[0]];
             for (int i = 0; i < players.Length; i++)
             {
-                players[0] = players[0] with { IsBot = true };
+                players[i] = players[i] with { IsBot = true };
             }
 
             // Act
 
-            Round result = Round.Create(gameId, players, true);
+            Round round = Round.Create(gameId, players, true);
 
             // Assert
 
-            Assert.Equal(gameId, result.GameId);
-            Assert.Equal(players.Length, result.Players.Length);
+            Assert.Equal(gameId, round.GameId);
+            Assert.Equal(players.Length, round.Players.Length);
+            Assert.Contains(round.Players, _ =>
+                _.Cards.Any(_ => _.Suit == Contracts.Suit.Spades && _.Rank == Contracts.Rank.Queen));
         }
     }
 

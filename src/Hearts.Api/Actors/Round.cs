@@ -248,9 +248,9 @@ public class Round
             Card[] cardsToPass = [.. player.Cards.Take(3)];
 
             if (player.Cards.Any(_ => _.Suit == Suit.Spades && _.Rank == Rank.Queen)
-                && cardsToPass.Any(_ => _.Suit == Suit.Spades && _.Rank == Rank.Queen))
+                && !cardsToPass.Any(_ => _.Suit == Suit.Spades && _.Rank == Rank.Queen))
             {
-                cardsToPass[0] = cardsToPass.Single(_ => _.Suit == Suit.Spades && _.Rank == Rank.Queen);
+                cardsToPass[0] = player.Cards.Single(_ => _.Suit == Suit.Spades && _.Rank == Rank.Queen);
             }
 
             player.CardsToPass = cardsToPass;
