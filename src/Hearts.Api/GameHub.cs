@@ -167,7 +167,9 @@ public class GameHub : Hub<IGameClient>
                     game = await gameActor.Map();
                     await this.NotifyGameUpdated(activity, game);
 
+                    await Task.Delay(1000);
                     await this.StartTrick(gameActor);
+
                     game = await gameActor.Map();
                     await this.NotifyGameUpdated(activity, game);
                 }
