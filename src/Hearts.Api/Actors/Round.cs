@@ -76,7 +76,7 @@ public class Round
             return;
         }
 
-        while (this.CurrentTrick.PlayerTurn?.Player.IsBot == true && this.CurrentTrick.PlayerTurn.Cards.Length > 0 && this.CurrentTrick.IsCompleted is false)
+        while (this.CurrentTrick.PlayerTurn.Player.IsBot == true && this.CurrentTrick.PlayerTurn.Cards.Length > 0 && this.CurrentTrick.IsCompleted is false)
         {
             Card? card = this.CurrentTrick.PlayerTurn.SelectCardToPlay(this.CurrentTrick, this.IsHeartsBroken);
             this.PlayCard(this.CurrentTrick.PlayerTurn.Player.Id, card!);
@@ -94,7 +94,7 @@ public class Round
 
         roundPlayer?.PlayCard(card, this.CurrentTrick);
 
-        if (this.IsHeartsBroken is false && card?.Suit == Suit.Hearts)
+        if (this.IsHeartsBroken is false && card.Suit == Suit.Hearts)
         {
             this.IsHeartsBroken = true;
         }
@@ -145,7 +145,7 @@ public class Round
 
         if (roundPlayer.Cards.Any(_ => _.Suit == this.CurrentTrick.Suit) && card.Suit != this.CurrentTrick.Suit)
         {
-            return Result.Invalid(new ValidationError($"The suit of the current trick is {this.CurrentTrick.Suit.ToString()?.ToLower()}"));
+            return Result.Invalid(new ValidationError($"The suit of the current trick is {this.CurrentTrick.Suit.ToString()!.ToLower()}"));
         }
 
         if (this.Tricks.Length == 1 && card.Suit == Suit.Hearts)

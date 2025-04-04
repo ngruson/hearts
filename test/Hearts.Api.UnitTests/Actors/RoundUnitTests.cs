@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Hearts.Api.Actors;
+using static Hearts.Api.UnitTests.Actors.RoundUnitTests;
 
 namespace Hearts.Api.UnitTests.Actors;
 
@@ -170,19 +171,14 @@ public class RoundUnitTests
         }
 
         [Theory, AutoNSubstituteData]
-        public void play_card_given_current_trick_is_null(
+        public void no_op_given_current_trick_is_null(
             Round sut,
             RoundPlayer[] players,
             Contracts.Card card)
         {
             // Arrange
 
-            sut.Players = players;
-
-            if (!sut.Players.Any(_ => _.Cards.Any(_ => _.Suit == card.Suit && _.Rank == card.Rank)))
-            {
-                sut.Players[0].Cards[0] = card;
-            }
+            sut.Tricks = [];
 
             // Act
 
@@ -190,7 +186,7 @@ public class RoundUnitTests
 
             // Assert
 
-            Assert.Equal(2, sut.Players[0].Cards.Length);
+            Assert.Equal(3, sut.Players[0].Cards.Length);
         }
 
         [Theory, AutoNSubstituteData]
@@ -441,6 +437,72 @@ public class RoundUnitTests
             // Assert
 
             Assert.True(result.IsInvalid());
+        }
+    }
+
+    public class Scores
+    {
+        [Theory, AutoNSubstituteData]
+        public void calculate_scores(
+            Round sut,
+            RoundPlayer[] players)
+        {
+            // Arrange
+            
+            Trick trick = new([..players.Select(_ => _.Player)], players[0])
+            {
+                TrickCards = [..Enumerable.Repeat(
+                    new TrickCard(new Contracts.Card(Contracts.Suit.Hearts, Contracts.Rank.Two), players[0].Player.Id),
+                    1)],
+                Winner = players[0].Player,
+                IsCompleted = true
+            };
+
+            sut.Players = players;
+            sut.Tricks = [.. Enumerable.Repeat(trick, 13)];
+
+            // Act
+
+            PlayerScore? result = sut.Scores?.Single(_ => _.PlayerId == players[0].Player.Id);
+
+            // Assert
+
+            Assert.Equal(13, result?.Points);
+        }
+
+        [Theory, AutoNSubstituteData]
+        public void calculate_scores_with_queen_of_spades(
+            Round sut,
+            RoundPlayer[] players)
+        {
+            // Arrange
+
+            Trick trick = new([.. players.Select(_ => _.Player)], players[0])
+            {
+                TrickCards = [..Enumerable.Repeat(
+                    new TrickCard(new Contracts.Card(Contracts.Suit.Hearts, Contracts.Rank.Two), players[0].Player.Id),
+                    1)],
+                Winner = players[0].Player,
+                IsCompleted = true
+            };
+
+            sut.Players = players;
+            sut.Tricks = [.. Enumerable.Repeat(trick, 13)];
+            sut.Tricks[0].TrickCards = [.. sut.Tricks[0].TrickCards,
+                new TrickCard(new Contracts.Card(Contracts.Suit.Spades, Contracts.Rank.Queen), players[0].Player.Id)];
+
+            // Act
+
+            PlayerScore? result = sut.Scores?.Single(_ => _.PlayerId == players[0].Player.Id);
+
+            // Assert
+
+            Assert.Equal(0, result?.Points);
+
+            foreach (PlayerScore? playerScore in sut.Scores!.Where(_ => _.PlayerId != players[0].Player.Id))
+            {
+                Assert.Equal(26, playerScore?.Points);
+            }
         }
     }
 }
