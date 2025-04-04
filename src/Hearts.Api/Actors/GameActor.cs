@@ -75,20 +75,14 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
 
     public Task PlayBots()
     {
-        if (this.CurrentRound is not null)
-        {
-            this.CurrentRound?.PlayBots();
-        }
+        this.CurrentRound?.PlayBots();
         
         return Task.CompletedTask;
     }
 
     public async Task PlayCard(Guid playerId, Card card)
     {
-        if (this.CurrentRound is not null)
-        {
-            this.CurrentRound?.PlayCard(playerId, card);
-        }
+        this.CurrentRound?.PlayCard(playerId, card);
         
         await Task.CompletedTask;
     }
@@ -109,10 +103,7 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
 
     public Task StartTrick()
     {
-        if (this.CurrentRound is not null)
-        {
-            this.CurrentRound.StartTrick();
-        }
+        this.CurrentRound?.StartTrick();
         
         return Task.CompletedTask;
     }

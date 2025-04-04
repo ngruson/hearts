@@ -180,7 +180,7 @@ public class GameActorUnitTests
     public class PlayBots
     {
         [Fact]
-        internal async Task play_bots()
+        internal async Task play_bots_when_current_round_is_not_null()
         {
             // Arrange
 
@@ -205,6 +205,71 @@ public class GameActorUnitTests
 
             Assert.Equal(12, turn?.Cards.Length);
             Assert.NotEqual(sut.CurrentRound?.CurrentTrick?.PlayerTurn.Player.Id, turn?.Player.Id);
+        }
+
+        [Fact]
+        internal async Task do_not_play_bots_when_current_round_is_null()
+        {
+            // Arrange
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+
+            // Act
+
+            await sut.PlayBots();
+
+            // Assert
+
+            Assert.Null(sut.CurrentRound);
+        }
+    }
+
+    public class PlayCard
+    {
+        [Theory, AutoNSubstituteData]
+        internal async Task play_card_when_current_round_is_not_null(
+            Player player,
+            Card card)
+        {
+            // Arrange
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+            await sut.AddPlayer(player);
+            await sut.StartRound();
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == Suit.Clubs && _.Rank == Rank.Two)))
+            {
+                sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
+            }
+            await sut.StartTrick();
+
+            // Act
+
+            await sut.PlayCard(player.Id, card);
+
+            // Assert
+
+            Assert.Equal(12, sut.CurrentRound?.CurrentTrick?.PlayerTurn.Cards.Length);
+        }
+
+        [Theory, AutoNSubstituteData]
+        internal async Task do_not_play_card_when_current_round_is_null(
+            Player player,
+            Card card)
+        {
+            // Arrange
+
+            ActorHost host = ActorHost.CreateForTest<GameActor>();
+            GameActor sut = new(host);
+
+            // Act
+
+            await sut.PlayCard(player.Id, card);
+
+            // Assert
+
+            Assert.Null(sut.CurrentRound);
         }
     }
 
