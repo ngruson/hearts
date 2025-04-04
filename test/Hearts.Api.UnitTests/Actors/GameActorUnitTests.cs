@@ -353,6 +353,12 @@ public class GameActorUnitTests
             }
 
             await sut.StartRound();
+
+            if (!sut.CurrentRound!.Players.Any(_ => _.Cards.Any(_ => _.Suit == Suit.Clubs && _.Rank == Rank.Two)))
+            {
+                sut.CurrentRound!.Players[0].Cards[0] = new Card(Suit.Clubs, Rank.Two);
+            }
+
             await sut.StartTrick();
 
             // Act
