@@ -4,52 +4,53 @@
 @inject LocalStorageService LocalStorageService
 @inject SignalRService SignalRService
 
-<div class="flex flex-col items-center mx-auto p-5">
-    <!-- Header Section -->
-    <header class="text-center mb-5">
-        <h1 class="tw-text-3xl">Hearts Game Lobby</h1>
-        <p>Welcome to the Hearts game lobby. Start or join a game to begin playing.</p>
-    </header>
+<div class="container pt-20">
+    <div class="flex flex-col items-center mx-auto p-5">
+        <!-- Header Section -->
+        <header class="text-center mb-5">
+            <h1 class="!font-medium !text-5xl">Game Lobby</h1>
+            <p>Welcome to the Hearts game lobby. Start or join a game to begin playing.</p>
+        </header>
 
-    <!-- Running Games Section -->
-    <section class="w-4/5 mb-5">
-        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Running Games</h2>
-        <ul class="list-none p-0">
-            @foreach (var game in RunningGames)
-            {
-                <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
-                    <span>@game.Id</span>
-                    <button class="bg-green-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-green-700" @onclick="() => JoinGame(game.Id)">Join</button>
-                </li>
-            }
-        </ul>
-    </section>
+        <!-- Running Games Section -->
+        <section class="w-4/5 mb-5">
+            <h2 class="!font-medium !text-3xl border-b-2 border-gray-300 pb-1.25 mb-2.5">Running Games</h2>
+            <ul class="list-none p-0">
+                @foreach (var game in RunningGames)
+                {
+                    <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
+                        <span>@game.Id</span>
+                    </li>
+                }
+            </ul>
+        </section>
 
-    <!-- Start New Game Section -->
-    <section class="w-4/5 mb-5">
-        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Start a New Game</h2>
-        <CreateGameButton Player="player" />
-    </section>
+        <!-- Start New Game Section -->
+        <section class="w-4/5 mb-5">
+            <h2 class="!font-medium !text-3xl border-b-2 border-gray-300 pb-1.25 mb-2.5">Start a New Game</h2>
+            <CreateGameButton Player="player" />
+        </section>
 
-    <!-- Waiting Games Section -->
-    <section class="w-4/5 mb-5">
-        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Waiting Games</h2>
-        <ul class="list-none p-0">
-            @foreach (var game in WaitingGames)
-            {
-                <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
-                    <span>@game.Id</span>
-                    <button class="bg-green-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-green-700" @onclick="() => JoinGame(game.Id)">Join</button>
-                </li>
-            }
-        </ul>
-    </section>
+        <!-- Waiting Games Section -->
+        <section class="w-4/5 mb-5">
+            <h2 class="!font-medium !text-3xl border-b-2 border-gray-300 pb-1.25 mb-2.5">Waiting Games</h2>
+            <ul class="list-none p-0">
+                @foreach (var game in WaitingGames)
+                {
+                    <li class="flex justify-between p-2.5 border border-gray-300 rounded-md mb-1.25">
+                        <span>@game.Id</span>
+                        <button class="bg-red-600 text-white border-none rounded-md px-2.5 py-1.25 cursor-pointer hover:bg-red-700" @onclick="() => JoinGame(game.Id)">Join</button>
+                    </li>
+                }
+            </ul>
+        </section>
 
-    <!-- Player Information Section -->
-    <section class="w-4/5 mb-5">
-        <h2 class="border-b-2 border-gray-300 pb-1.25 mb-2.5">Player Information</h2>
-        <p>Player Name: @player?.PlayerName</p>
-    </section>
+        <!-- Player Information Section -->
+        <section class="w-4/5 mb-5">
+            <h2 class="!font-medium !text-3xl border-b-2 border-gray-300 pb-1.25 mb-2.5">Player Information</h2>
+            <p>Player Name: @player?.PlayerName</p>
+        </section>
+    </div>
 </div>
 
 @code {
