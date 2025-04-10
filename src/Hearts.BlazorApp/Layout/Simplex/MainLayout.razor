@@ -1,34 +1,18 @@
 @inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
 
-<div class="fixed top-0 left-0 right-0 w-full">
-    <div class="flex justify-start bg-red-600 border border-red-800 py-2 text-base">
-        <div class="flex container justify-between max-w-6xl ml-auto mr-auto px-3">
-            <a href="/" class="text-xl text-white font-normal mr-4 py-3">Hearts</a>
-            <div class="flex grow justify-center items-center">
-                <ul class="flex flex-row list-none">
-                    <li>
-                        <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 1</a>
-                    </li>
-                    <li>
-                        <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 2</a>
-                    </li>
-                </ul>
-                <ul class="flex flex-row ml-auto">
-                    <li>
-                        <a href="/" class="text-white opacity-50 font-normal">
-                            <i class="fa-solid fa-circle-half-stroke">
-                            </i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="page">
-        <main>
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    </div>
+<div class="flex flex-col min-h-screen">
+    <NavBar />
+    @Body
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var isDarkMode = await JSRuntime.InvokeAsync<bool>("localStorageHelper.getDarkModeSetting");
+            await JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", isDarkMode);
+        }
+    }
+}

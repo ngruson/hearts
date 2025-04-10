@@ -7,21 +7,22 @@
 @inject NavigationManager NavigationManager
 @inject SignalRService SignalRService
 
-<div class="h-screen overflow-hidden bg-green-700">
-    <div class="h-9/10 grid grid-cols-3 gap-4 items-center">
+
+<div class="h-full bg-green-700 min-h-screen pt-40">
+    <div class="grid grid-cols-3 gap-4 items-center">
         <!-- Player 1 (Third row, second column) -->
         <div class="flex flex-col items-center col-start-2 row-start-3">
             <div @ref="statusMessage" class="mb-12 w-100 h-8 bg-blue-500 border-yellow-500 border-2 flex text-white items-center justify-center">
                 Text
             </div>
-            <div class="flex justify-center min-w-xs">
+            <div class="flex justify-center min-w-xs min-h-32">
                 @if (Player(0) is not null)
                 {
                     @foreach (var card in Player(0)!.Cards)
                     {
                         <CardComponent Card=@card Toggled=@ToggleCard(0, card) Style="h-32 -ml-15" CardSelectedStyle="up" SelectedCards=@Player(0)!.CardsToPass OnClick="CardClicked" />
                     }
-                }                
+                }
             </div>
             <div class="flex justify-center items-center mt-4">
                 <div class="flex flex-col items-center self-center">
@@ -42,7 +43,7 @@
             </div>
         </div>
         <!-- Player 2 (Second row, first column) -->
-        <div class="flex justify-center items-center col-start-1 row-start-2">
+        <div class="flex justify-center items-center col-start-1 row-start-2 min-h-128">
             <div class="flex flex-col items-center ml-12 gap-4">
                 <div class="flex flex-col justify-center items-center">
                     <div class="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xl mb-2">
@@ -60,7 +61,7 @@
                     }
                 </div>
             </div>
-            <div class="flex flex-col items-center ml-12">
+            <div class="flex flex-col items-center justify-center ml-12">
                 @if (Player(1) is not null)
                 {
                     foreach (var card in Player(1)!.Cards)
@@ -72,7 +73,7 @@
         </div>
         <!-- Player 3 (First row, second column) -->
         <div class="flex flex-col items-center col-start-2 row-start-1">
-            <div class="flex justify-center items-center mt-4 gap-4">                
+            <div class="flex justify-center items-center mt-4 gap-4">
                 <div class="flex flex-col items-center self-center">
                     <div class="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xl mb-2">
                         @PlayerScore(2)
@@ -89,7 +90,7 @@
                     }
                 </div>
             </div>
-            <div class="flex justify-center mt-4 min-w-xs">
+            <div class="flex justify-center mt-4 min-w-xs min-h-32">
                 @if (Player(2) is not null)
                 {
                     foreach (var card in Player(2)!.Cards)
@@ -100,8 +101,8 @@
             </div>
         </div>
         <!-- Player 4 (Second row, third column) -->
-        <div class="flex justify-center items-center col-start-3 row-start-2 -ml-50">
-            <div class="flex flex-col">
+        <div class="flex justify-center items-center col-start-3 row-start-2 -ml-50 min-h-128">
+            <div class="flex flex-col items-center justify-center">
                 @if (Player(3) is not null)
                 {
                     @foreach (var card in Player(3)!.Cards)
@@ -128,11 +129,11 @@
                 </div>
             </div>
             @* <div class="flex flex-col items-center ml-12">
-                <div class="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xl mb-2">
-                    @PlayerScore(3)
-                </div>
-                <p class="text-white font-bold text-xl">@PlayerName(3)</p>
-            </div> *@
+            <div class="w-32 h-32 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xl mb-2">
+                @PlayerScore(3)
+            </div>
+            <p class="text-white font-bold text-xl">@PlayerName(3)</p>
+        </div> *@
         </div>
         <!-- Center area -->
         @if (game?.IsCompleted == false)
@@ -159,8 +160,8 @@
             </div>
         }
     </div>
-    <div class="flex justify-end h-1/10 -mt-4">
-        <button @onclick="PassCards" disabled="@passButtonDisabled" class="mr-100 mb-50 w-40 h-20 bg-blue-800 text-white text-xl border-4 border-gray-500 py-2 px-4 rounded">
+    <div class="flex justify-end -mt-20">
+        <button @onclick="PassCards" disabled="@passButtonDisabled" class="mr-100 w-40 h-20 bg-blue-800 text-white text-xl border-4 border-gray-500 py-2 px-4 rounded">
             Pass
         </button>
     </div>

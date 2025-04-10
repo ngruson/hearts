@@ -1,0 +1,63 @@
+@inject IJSRuntime JSRuntime
+
+<div class="fixed top-0 left-0 w-full">
+    <div class="flex justify-start bg-red-600 border border-red-800 py-2 text-base">
+        <div class="flex container justify-between max-w-6xl ml-auto mr-auto px-3">
+            <a href="/" class="text-xl text-white font-normal mr-4 py-3">Hearts</a>
+            <div class="flex grow justify-center items-center">
+                <ul class="flex flex-row list-none">
+                    <li>
+                        <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 1</a>
+                    </li>
+                    <li>
+                        <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 2</a>
+                    </li>
+                </ul>
+                <ul class="flex flex-row ml-auto">
+                    <li>
+                        <a @onclick:preventDefault @onclick="ToggleDropdown" href="#" class="text-white opacity-50 font-normal">
+                            <i class="fa-solid fa-circle-half-stroke">
+                            </i>
+                        </a>
+                        @if (IsDropdownOpen)
+                        {
+                            <ul class="absolute min-w-40 mt-2 py-2 bg-white border border-gray-200 rounded">
+                                <li>
+                                    <a @onclick:preventDefault @onclick="SetLightMode" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">
+                                        <i class="fa-solid fa-sun"></i>
+                                        <span class="ml-2">Light</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a @onclick:preventDefault @onclick="SetDarkMode" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">
+                                        <i class="fa-solid fa-moon"></i>
+                                        <span class="ml-2">Dark</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsDropdownOpen = false;
+
+    private void ToggleDropdown()
+    {
+        IsDropdownOpen = !IsDropdownOpen;
+    }
+    private async Task SetLightMode(MouseEventArgs args)
+    {
+        await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", false);
+        IsDropdownOpen = !IsDropdownOpen;
+    }
+    private async Task SetDarkMode(MouseEventArgs args)
+    {
+        await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", true);
+        IsDropdownOpen = !IsDropdownOpen;
+    }
+}

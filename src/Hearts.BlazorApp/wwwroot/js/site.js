@@ -9,6 +9,9 @@ window.moveCardAnimation = (cardId) => {
 };
 
 window.setTextContent = (element, text) => {
+    if (!element) {
+        return null;
+    }
     element.textContent = text;
 };
 
@@ -49,4 +52,12 @@ function getAllImagesInCenterArea() {
         return [];
     }
     return centerArea.getElementsByTagName('img');
+}
+
+function toggleDarkMode(isDarkMode) {
+    if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
 }

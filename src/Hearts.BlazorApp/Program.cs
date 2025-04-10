@@ -15,11 +15,31 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
 
 builder.Services.AddTransient(sp => new HubConnectionBuilder()
     .WithUrl(new Uri($"{configuration["backend"]}/gameHub"))
+    .WithAutomaticReconnect()
     .Build());
 
 builder.Services.AddSingleton(sp =>
 {
     HubConnection hubConnection = sp.GetRequiredService<HubConnection>();
+    ILogger<HubConnection> logger = sp.GetRequiredService<ILogger<HubConnection>>();
+
+    hubConnection.Reconnecting += (exception) =>
+    {
+        if (exception != null)
+        {
+            logger.LogError(exception, "An error occurred while reconnecting.");
+        }
+
+        logger.LogInformation("Reconnecting...");
+        return Task.CompletedTask;
+    };
+
+    hubConnection.Reconnected += (connectionId) =>
+    {
+        logger.LogInformation("Reconnected to server with connection ID: {ConnectionId}", connectionId);
+        return Task.CompletedTask;
+    };
+
     SignalRService signalRService = new(hubConnection);
     Task.Run(async () => await signalRService.StartAsync());
 
