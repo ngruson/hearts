@@ -4,8 +4,13 @@ module.exports = {
         './**/*.{cshtml,html}',
         './**/*.{js,ts}',
     ],
+    darkMode: 'selector',
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                sans: ['Open Sans', 'sans-serif'],
+            },
+        },
     },
     safelist: [        
         '-ml-16',

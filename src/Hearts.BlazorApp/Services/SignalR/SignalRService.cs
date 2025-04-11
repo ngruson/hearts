@@ -33,7 +33,7 @@ public class SignalRService
     private void OnPlayerCreated(Player player)
     {
         PlayerCreated?.Invoke(this, player);
-    }    
+    }
 
     public async Task CreatePlayer(string name)
     {
@@ -83,5 +83,3 @@ public class SignalRService
         }
     }
 }
-
-

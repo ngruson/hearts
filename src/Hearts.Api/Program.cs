@@ -2,6 +2,7 @@ using Hearts.Api;
 using Hearts.Api.Actors;
 using Hearts.Api.OpenTelemetry;
 using Hearts.ServiceDefaults;
+using Microsoft.AspNetCore.ResponseCompression;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -14,6 +15,11 @@ builder.Services.AddActors(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
+});
 builder.Services.AddSingleton<GameHub>();
 builder.Services.AddSingleton<Instrumentation>();
 
