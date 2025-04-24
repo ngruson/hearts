@@ -1,0 +1,21 @@
+{
+    "name": "identityserver",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "build:css": "npx @tailwindcss/cli -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/site.css --watch"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "-vs-binding": {
+        "ProjectOpened": [
+            "build:css"
+        ]
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.1.4",
+        "tailwindcss": "^4.1.4"
+    }
+}
