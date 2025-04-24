@@ -54,7 +54,7 @@
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.42" />
   </ItemGroup>
