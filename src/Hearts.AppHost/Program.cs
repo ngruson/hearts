@@ -20,7 +20,25 @@ IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.Hearts_Api>(
     .WithReference(stateStore)
     .WaitFor(redis);
 
-builder.AddProject<Projects.Hearts_BlazorApp>("frontend")
-    .WithReference(api);
+IResourceBuilder<PostgresServerResource> pg = builder.AddPostgres("postgres")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithDataVolume("pg-data")
+    .WithPgAdmin(config =>
+    {
+        config.WithImageTag("latest");
+        config.WithLifetime(ContainerLifetime.Persistent);
+    });
+
+IResourceBuilder<ProjectResource> idSrv = builder.AddProject<Projects.Hearts_IdentityServer>("identity")
+    .WithReference(pg)
+    .WaitFor(pg);
+
+IResourceBuilder<ProjectResource> frontend = builder.AddProject<Projects.Hearts_BlazorApp>("frontend")
+    .WithReference(api)
+    .WithReference(idSrv)
+    .WaitFor(idSrv)
+    .WithEnvironment("ASPNETCORE_URLS", "https://localhost:7220");
+
+idSrv.WithEnvironment("blazorEndpoint", "https://localhost:7220");
 
 builder.Build().Run();

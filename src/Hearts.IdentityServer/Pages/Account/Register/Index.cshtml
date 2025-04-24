@@ -1,0 +1,32 @@
+@page
+@model Hearts.IdentityServer.Pages.Account.Register.IndexModel
+
+<div class="container pt-40 mx-auto">
+    <partial name="_ValidationSummary" />
+    
+    <form asp-page="/Account/Register/Index">
+        <input type="hidden" asp-for="Input.ReturnUrl" />
+        <div class="mb-5">
+            <h1 class="!font-medium !text-5xl dark:!text-gray-300">Register</h1>
+            <p class="dark:!text-gray-300">Please enter your information to register.</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.Username">Username</label>
+            <input class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md" placeholder="Enter your user name" asp-for="Input.Username" autofocus>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.Password">Password</label>
+            <input type="password" class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md" placeholder="Enter your password" asp-for="Input.Password" autocomplete="off">
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.ConfirmPassword">Confirm password</label>
+            <input type="password" class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md" placeholder="Confirm your password" asp-for="Input.ConfirmPassword" autocomplete="off">
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.Email">Email</label>
+            <input type="email" class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md" placeholder="Enter your email address" asp-for="Input.Email">
+            <small class="mt-1 text-sm">We'll never share your email with anyone else.</small>
+        </div>
+        <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700" name="Input.Button" value="login">Register</button>
+    </form>
+</div>

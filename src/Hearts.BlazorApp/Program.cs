@@ -9,14 +9,20 @@ WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-IConfigurationRoot configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
-    .Build();
+IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json");
+
+if (builder.HostEnvironment.IsDevelopment())
+{
+    configurationBuilder.AddJsonFile("appsettings.Development.json");
+}
+
+IConfigurationRoot configuration = configurationBuilder.Build();
 
 builder.Services.AddTransient(sp => new HubConnectionBuilder()
-    .WithUrl(new Uri($"{configuration["backend"]}/gameHub"))
-    .WithAutomaticReconnect()
-    .Build());
+   .WithUrl(new Uri($"{configuration["backend"]}/gameHub"))
+   .WithAutomaticReconnect()
+   .Build());
 
 builder.Services.AddSingleton(sp =>
 {
@@ -27,7 +33,7 @@ builder.Services.AddSingleton(sp =>
     {
         if (exception != null)
         {
-            logger.LogError(exception, "An error occurred while reconnecting.");
+            logger.LogError(exception, "An error     occurred while reconnecting.");
         }
 
         logger.LogInformation("Reconnecting...");
@@ -48,4 +54,12 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddScoped<LocalStorageService>();
 
-await builder.Build().RunAsync();
+builder.Services.AddOidcAuthentication(options =>
+{
+    options.ProviderOptions.Authority = "https://localhost:5001";
+    options.ProviderOptions.ClientId = "blazor";
+    options.ProviderOptions.ResponseType = "code";
+});
+
+WebAssemblyHost host = builder.Build();
+await host.RunAsync();
