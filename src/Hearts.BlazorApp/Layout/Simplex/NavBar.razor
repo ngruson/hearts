@@ -1,63 +1,151 @@
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
-<div class="fixed top-0 left-0 w-full">
-    <div class="flex justify-start bg-red-600 border border-red-800 py-2 text-base">
-        <div class="flex container justify-between max-w-6xl ml-auto mr-auto px-3">
-            <a href="/" class="text-xl text-white font-normal mr-4 py-3">Hearts</a>
-            <div class="flex grow justify-center items-center">
-                <ul class="flex flex-row list-none">
-                    <li>
+<div class="fixed top-0 left-0 w-full">  
+    <div class="flex justify-start bg-red-600 border border-red-800 py-2 text-base">  
+        <div class="flex container justify-between max-w-6xl ml-auto mr-auto px-3">  
+            <a href="/" class="text-xl text-white font-normal mr-4 py-3">Hearts</a>  
+            <div class="flex grow justify-center items-center">  
+                <ul class="flex flex-row list-none">  
+                    <li>  
                         <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 1</a>
-                    </li>
-                    <li>
+                    </li>  
+                    <li>  
                         <a href="/" class="text-white opacity-50 font-normal px-2">Menu Item 2</a>
-                    </li>
-                </ul>
-                <ul class="flex flex-row ml-auto">
-                    <li>
-                        <a @onclick:preventDefault @onclick="ToggleDropdown" href="#" class="text-white opacity-50 font-normal">
-                            <i class="fa-solid fa-circle-half-stroke">
-                            </i>
-                        </a>
-                        @if (IsDropdownOpen)
-                        {
-                            <ul class="absolute min-w-40 mt-2 py-2 bg-white border border-gray-200 rounded">
-                                <li>
-                                    <a @onclick:preventDefault @onclick="SetLightMode" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">
-                                        <i class="fa-solid fa-sun"></i>
+                    </li>  
+                </ul>  
+                <ul class="flex flex-row ml-auto">  
+                    <li id="lightDarkModeDropdownMenu">
+                        <a @onclick:preventDefault @onclick="ToggleLightDarkModeDropdown" href="#" class="text-white opacity-50 font-normal px-2">
+                            <i class="fa-solid fa-circle-half-stroke">  
+                            </i>  
+                        </a>  
+                        @if (IsLightDarkModeDropdownOpen)
+                        {  
+                            <ul class="absolute min-w-40 mt-2 py-2 bg-white border border-gray-200 rounded">  
+                                <li>  
+                                    <a @onclick:preventDefault @onclick="SetLightMode" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">  
+                                        <i class="fa-solid fa-sun"></i>  
                                         <span class="ml-2">Light</span>
-                                    </a>
-                                </li>
-                                <li>
+                                    </a>  
+                                </li>  
+                                <li>  
                                     <a @onclick:preventDefault @onclick="SetDarkMode" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">
                                         <i class="fa-solid fa-moon"></i>
                                         <span class="ml-2">Dark</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        }
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+                                    </a>  
+                                </li>  
+                            </ul>  
+                        }  
+                    </li>                      
+                    <li id="userDropdownMenu">
+                        @if (IsUserAuthenticated)
+                        {
+                            <a @onclick:preventDefault @onclick="ToggleUserDropdown" href="#" class="text-white opacity-50 font-normal px-2">
+                                @UserName
+                            </a>
+                            @if (IsUserDropdownOpen)
+                            {
+                                <ul class="absolute min-w-40 mt-2 py-2 bg-white border border-gray-200 rounded">
+                                    <li>
+                                        <a @onclick:preventDefault @onclick="SignOut" href="." class="block px-4 py-1 hover:bg-red-600 hover:text-white w-full">
+                                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                            <span class="ml-2">Sign out</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            }
+                        }                        
+                    </li>                      
+                </ul>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
 
 @code {
-    private bool IsDropdownOpen = false;
+    private bool IsLightDarkModeDropdownOpen = false;
+    private bool IsUserDropdownOpen = false;
+    private bool IsUserAuthenticated = false;
+    private string UserName = string.Empty;
+    private DotNetObjectReference<NavBar>? dotNetRef;
 
-    private void ToggleDropdown()
-    {
-        IsDropdownOpen = !IsDropdownOpen;
+    protected override async Task OnInitializedAsync()  
+    {  
+        await UpdateAuthenticationState();
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("addClickOutsideListener", "lightDarkModeDropdownMenu", dotNetRef, nameof(CloseLightDarkModeDropdown));
+            await JSRuntime.InvokeVoidAsync("addClickOutsideListener", "userDropdownMenu", dotNetRef, nameof(CloseUserDropdown));
+        }
+    }
+
+    private async Task UpdateAuthenticationState()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        IsUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+        UserName = authState.User.Identity?.Name ?? string.Empty;
+        StateHasChanged();
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        await UpdateAuthenticationState();
+    }
+
+    private void ToggleLightDarkModeDropdown()
+    {
+        IsLightDarkModeDropdownOpen = !IsLightDarkModeDropdownOpen;
+    }
+
+    private void ToggleUserDropdown()
+    {
+        IsUserDropdownOpen = !IsUserDropdownOpen;
+    }
+
+    [JSInvokable]
+    public void CloseLightDarkModeDropdown()
+    {
+        IsLightDarkModeDropdownOpen = false;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void CloseUserDropdown()
+    {
+        IsUserDropdownOpen = false;
+        StateHasChanged();
+    }
+
     private async Task SetLightMode(MouseEventArgs args)
     {
         await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", false);
-        IsDropdownOpen = !IsDropdownOpen;
+        IsLightDarkModeDropdownOpen = !IsLightDarkModeDropdownOpen;
     }
+
     private async Task SetDarkMode(MouseEventArgs args)
     {
         await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", true);
-        IsDropdownOpen = !IsDropdownOpen;
+        IsLightDarkModeDropdownOpen = !IsLightDarkModeDropdownOpen;
+    }
+
+    private void SignOut(MouseEventArgs args)
+    {
+        Navigation.NavigateToLogout("authentication/logout");
+
+        IsUserDropdownOpen = !IsUserDropdownOpen;
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        dotNetRef?.Dispose();
     }
 }

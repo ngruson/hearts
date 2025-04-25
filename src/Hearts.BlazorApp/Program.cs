@@ -12,11 +12,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json");
 
-if (builder.HostEnvironment.IsDevelopment())
-{
-    configurationBuilder.AddJsonFile("appsettings.Development.json");
-}
-
 IConfigurationRoot configuration = configurationBuilder.Build();
 
 builder.Services.AddTransient(sp => new HubConnectionBuilder()
@@ -56,9 +51,10 @@ builder.Services.AddScoped<LocalStorageService>();
 
 builder.Services.AddOidcAuthentication(options =>
 {
-    options.ProviderOptions.Authority = "https://localhost:5001";
+    options.ProviderOptions.Authority = configuration["idSrv"];
     options.ProviderOptions.ClientId = "blazor";
     options.ProviderOptions.ResponseType = "code";
+    options.ProviderOptions.PostLogoutRedirectUri = builder.HostEnvironment.BaseAddress;
 });
 
 WebAssemblyHost host = builder.Build();

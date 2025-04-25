@@ -30,6 +30,8 @@ public static class Config
 
                 RedirectUris = [$"{configuration["blazorEndpoint"]}/authentication/login-callback"],
 
+                PostLogoutRedirectUris = [$"{configuration["blazorEndpoint"]}/signout-callback-oidc"],
+
                 AllowedScopes = { "openid", "profile" }
             }
         ];

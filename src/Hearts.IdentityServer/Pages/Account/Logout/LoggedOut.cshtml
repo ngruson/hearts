@@ -1,7 +1,8 @@
 @page
-@model Hearts.IdentityServer.Pages.Logout.LoggedOut
+@using Hearts.IdentityServer.Pages.Account.Logout
+@model Hearts.IdentityServer.Pages.Account.Logout.LoggedOut
 
-<div class="logged-out-page">
+<div class="container pt-40 mx-auto">
     <h1>
         Logout
         <small>You are now logged out</small>
@@ -10,7 +11,7 @@
     @if (Model.View.PostLogoutRedirectUri != null)
     {
         <div>
-            Click <a class="PostLogoutRedirectUri" href="@Model.View.PostLogoutRedirectUri">here</a> to return to the
+            Click <a class="underline text-red-500" href="@Model.View.PostLogoutRedirectUri">here</a> to return to the
             <span>@Model.View.ClientName</span> application.
         </div>
     }

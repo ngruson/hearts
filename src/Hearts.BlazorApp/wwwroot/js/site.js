@@ -15,6 +15,20 @@ window.setTextContent = (element, text) => {
     element.textContent = text;
 };
 
+window.addClickOutsideListener = (dropdownId, dotNetObject, closeMethod) => {
+    const dropdown = document.getElementById(dropdownId);
+    const clickHandler = (event) => {
+        if (dropdown) {
+            if (!dropdown.contains(event.target)) {
+                dotNetObject.invokeMethodAsync(closeMethod);
+            }
+        }
+    };
+    document.addEventListener('click', clickHandler);
+
+    return () => document.removeEventListener('click', clickHandler);
+};
+
 function getElementPosition(id) {
     const element = document.getElementById(id);
     if (!element) {
