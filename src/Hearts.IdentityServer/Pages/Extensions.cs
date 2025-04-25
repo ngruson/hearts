@@ -12,8 +12,8 @@ public static class Extensions
     /// </summary>
     internal static async Task<bool> GetSchemeSupportsSignOutAsync(this HttpContext context, string scheme)
     {
-        var provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-        var handler = await provider.GetHandlerAsync(context, scheme);
+        IAuthenticationHandlerProvider provider = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+        IAuthenticationHandler? handler = await provider.GetHandlerAsync(context, scheme);
         return (handler is IAuthenticationSignOutHandler);
     }
 
@@ -42,7 +42,7 @@ public static class Extensions
     /// </summary>
     internal static bool IsRemote(this ConnectionInfo connection)
     {
-        var localAddresses = new List<string?> { "127.0.0.1", "::1" };
+        List<string?> localAddresses = ["127.0.0.1", "::1"];
         if (connection.LocalIpAddress != null)
         {
             localAddresses.Add(connection.LocalIpAddress.ToString());
