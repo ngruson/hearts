@@ -1,0 +1,31 @@
+@page
+@model Hearts.IdentityServer.Pages.Account.ResetPassword.IndexModel
+
+<div class="container pt-40 mx-auto">
+    <partial name="_ValidationSummary" />
+    <form asp-page="/Account/ResetPassword/Index">
+        <input type="hidden" asp-for="Input.Email" />
+        <input type="hidden" asp-for="Input.Token" />
+        <div class="mb-5">
+            <h1 class="!font-medium !text-5xl dark:!text-gray-300">Reset Password</h1>
+            <p class="dark:!text-gray-300">Please enter your new password.</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.NewPassword">New Password</label>
+            <input type="password" class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md w-100" placeholder="Enter your new password" asp-for="Input.NewPassword" autocomplete="off">
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.ConfirmPassword">Confirm Password</label>
+            <input type="password" class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md w-100" placeholder="Confirm your new password" asp-for="Input.ConfirmPassword" autocomplete="off">
+        </div>
+        <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Reset Password</button>
+    </form>
+    <div class="mt-3">
+        @if (Model.PasswordReset)
+        {
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative w-100" role="alert">
+                <span class="block sm:inline">Your new password has been set.</span>
+            </div>
+        }
+    </div>
+</div>

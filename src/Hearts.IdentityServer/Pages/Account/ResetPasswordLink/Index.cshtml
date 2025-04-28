@@ -1,0 +1,26 @@
+@page
+@using Hearts.IdentityServer.Pages.Account.ResetPasswordLink
+@model IndexModel
+
+<div class="container pt-40 mx-auto">
+    <partial name="_ValidationSummary" />
+    <form asp-page="/Account/ResetPasswordLink/Index">
+        <div class="mb-5">
+            <h1 class="!font-medium !text-5xl dark:!text-gray-300">Reset Password</h1>
+            <p class="dark:!text-gray-300">Please enter your email address to reset your password.</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700" asp-for="Input.Email">Email Address</label>
+            <input class="mt-1 px-3 py-1.5 block border border-gray-300 rounded-md w-100" placeholder="Enter your email address" asp-for="Input.Email" autofocus>
+        </div>
+        <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Send Reset Link</button>
+    </form>
+    <div class="mt-3">
+        @if (Model.LinkSent)
+        {
+            <div class="bg-green-100 border border-green-400 text-green-700 w-100 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">A reset link has been sent to your email address.</span>
+            </div>
+        }
+    </div>
+</div>
