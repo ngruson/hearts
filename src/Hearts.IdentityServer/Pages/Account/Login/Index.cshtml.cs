@@ -23,13 +23,6 @@ public class Index(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager) : PageModel
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly IIdentityServerInteractionService _interaction = interaction;
-    private readonly IEventService _events = events;
-    private readonly IAuthenticationSchemeProvider _schemeProvider = schemeProvider;
-    private readonly IIdentityProviderStore _identityProviderStore = identityProviderStore;
-
     public ViewModel View { get; set; } = default!;
 
     [BindProperty]
@@ -51,7 +44,7 @@ public class Index(
     public async Task<IActionResult> OnPost()
     {
         // check if we are in the context of an authorization request
-        AuthorizationRequest? context = await this._interaction.GetAuthorizationContextAsync(this.Input.ReturnUrl);
+        AuthorizationRequest? context = await interaction.GetAuthorizationContextAsync(this.Input.ReturnUrl);
 
         // the user clicked the "cancel" button
         if (this.Input.Button != "login")
@@ -64,7 +57,7 @@ public class Index(
                 // if the user cancels, send a result back into IdentityServer as if they 
                 // denied the consent (even if this client does not require consent).
                 // this will send back an access denied OIDC error response to the client.
-                await this._interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
+                await interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
 
                 // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
                 if (context.IsNativeClient())
@@ -88,11 +81,11 @@ public class Index(
             // Only remember login if allowed
             bool rememberLogin = LoginOptions.AllowRememberLogin && this.Input.RememberLogin;
 
-            Microsoft.AspNetCore.Identity.SignInResult result = await this._signInManager.PasswordSignInAsync(this.Input.Username!, this.Input.Password!, isPersistent: rememberLogin, lockoutOnFailure: true);
+            Microsoft.AspNetCore.Identity.SignInResult result = await signInManager.PasswordSignInAsync(this.Input.Username!, this.Input.Password!, isPersistent: rememberLogin, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                ApplicationUser? user = await this._userManager.FindByNameAsync(this.Input.Username!);
-                await this._events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+                ApplicationUser? user = await userManager.FindByNameAsync(this.Input.Username!);
+                await events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
                 Telemetry.Metrics.UserLogin(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider);
 
                 if (context != null)
@@ -128,7 +121,7 @@ public class Index(
             }
 
             const string error = "invalid credentials";
-            await this._events.RaiseAsync(new UserLoginFailureEvent(this.Input.Username, error, clientId: context?.Client.ClientId));
+            await events.RaiseAsync(new UserLoginFailureEvent(this.Input.Username, error, clientId: context?.Client.ClientId));
             Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, error);
             this.ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
         }
@@ -145,10 +138,10 @@ public class Index(
             ReturnUrl = returnUrl
         };
 
-        AuthorizationRequest? context = await this._interaction.GetAuthorizationContextAsync(returnUrl);
+        AuthorizationRequest? context = await interaction.GetAuthorizationContextAsync(returnUrl);
         if (context?.IdP != null)
         {
-            AuthenticationScheme? scheme = await this._schemeProvider.GetSchemeAsync(context.IdP);
+            AuthenticationScheme? scheme = await schemeProvider.GetSchemeAsync(context.IdP);
             if (scheme != null)
             {
                 bool local = context.IdP == IdentityServerConstants.LocalIdentityProvider;
@@ -170,7 +163,7 @@ public class Index(
             return;
         }
 
-        IEnumerable<AuthenticationScheme> schemes = await this._schemeProvider.GetAllSchemesAsync();
+        IEnumerable<AuthenticationScheme> schemes = await schemeProvider.GetAllSchemesAsync();
 
         List<ViewModel.ExternalProvider> providers = [.. schemes
             .Where(x => x.DisplayName != null)
@@ -180,7 +173,7 @@ public class Index(
                 displayName: x.DisplayName ?? x.Name
             ))];
 
-        IEnumerable<ViewModel.ExternalProvider> dynamicSchemes = (await this._identityProviderStore.GetAllSchemeNamesAsync())
+        IEnumerable<ViewModel.ExternalProvider> dynamicSchemes = (await identityProviderStore.GetAllSchemeNamesAsync())
             .Where(x => x.Enabled)
             .Select(x => new ViewModel.ExternalProvider
             (

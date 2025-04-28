@@ -60,7 +60,7 @@ public class IndexModel(UserManager<ApplicationUser> userManager,
             {
                 string token = await userManager.GenerateEmailConfirmationTokenAsync(user);                
                 string confirmationLink = $"{this.Request.Scheme}://{this.Request.Host}{this.Url.Page("/Account/ConfirmEmail/Index", new { userId = user.Id, token })}";
-                await emailSender.SendConfirmationLinkAsync(user, user.Email!, confirmationLink!);
+                await emailSender.SendConfirmationLinkAsync(user, user.Email!, confirmationLink);
                 
                 return this.RedirectToPage("/Account/Login/Index", this.Input.ReturnUrl);
             }
