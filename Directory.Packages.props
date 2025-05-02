@@ -23,7 +23,7 @@
     <PackageVersion Include="Duende.IdentityServer.EntityFramework" Version="7.2.1" />
     <PackageVersion Include="Marten" Version="7.40.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.3" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.4" />
