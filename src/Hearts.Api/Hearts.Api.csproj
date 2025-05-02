@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Ardalis.Result" />
     <PackageReference Include="Dapr.Actors.AspNetCore" />
+    <PackageReference Include="Marten" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" />
   </ItemGroup>

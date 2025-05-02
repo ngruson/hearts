@@ -2,8 +2,10 @@ using Hearts.Contracts;
 
 namespace Hearts.Api.Actors;
 
-public class Trick(Player[] players, RoundPlayer turn, Suit? suit = null)
+public class Trick(Guid id, Guid roundId, Player[] players, RoundPlayer turn, Suit? suit = null)
 {
+    public Guid Id { get; set; } = id;
+    public Guid RoundId { get; set; } = roundId;
     public Player[] Players { get; set; } = players;
     public Suit? Suit { get; set; } = suit;
     public TrickCard[] TrickCards { get; set; } = [];
@@ -21,7 +23,7 @@ public class Trick(Player[] players, RoundPlayer turn, Suit? suit = null)
         }
     }
 
-    internal static Trick Create(Player[] players, RoundPlayer turn, Suit? suit)
+    internal static Trick Create(Guid roundId, Player[] players, RoundPlayer turn, Suit? suit)
     {
         Player[] orderedPlayers = [turn.Player];
         
@@ -32,7 +34,7 @@ public class Trick(Player[] players, RoundPlayer turn, Suit? suit = null)
             orderedPlayers = [.. orderedPlayers, players[nextIndex]];
         }
 
-        Trick trick = new(orderedPlayers, turn, suit);
+        Trick trick = new(Guid.CreateVersion7(), roundId, orderedPlayers, turn, suit);
 
         return trick;
     }
@@ -40,6 +42,8 @@ public class Trick(Player[] players, RoundPlayer turn, Suit? suit = null)
     public Contracts.Trick Map()
     {
         return new(
+            this.Id,
+            this.RoundId,
             [.. this.Players],
             [.. this.TrickCards.Select(_ => _.Map())],
             this.Suit,

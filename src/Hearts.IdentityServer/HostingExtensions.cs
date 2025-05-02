@@ -97,6 +97,12 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;");
+            await next();
+        });
+
         return app;
     }
 

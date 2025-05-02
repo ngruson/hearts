@@ -2,18 +2,19 @@ using Ardalis.Result;
 using Dapr.Actors.Runtime;
 using Hearts.Api.Actors;
 using Hearts.Contracts;
+using Marten;
 
 namespace Hearts.Api.UnitTests.Actors;
 
 public class GameActorUnitTests
 {
-    [Fact]
-    internal async Task add_bot_player()
+    [Theory, AutoNSubstituteData]
+    internal async Task add_bot_player(IDocumentStore documentStore)
     {
         // Arrange
 
         ActorHost host = ActorHost.CreateForTest<GameActor>();
-        GameActor sut = new(host);
+        GameActor sut = new(host, documentStore);
 
         // Act
 
@@ -31,12 +32,13 @@ public class GameActorUnitTests
 
     [Theory, AutoNSubstituteData]
     internal async Task add_player(
+        IDocumentStore documentStore,
         Player player)
     {
         // Arrange
 
         ActorHost host = ActorHost.CreateForTest<GameActor>();
-        GameActor sut = new(host);
+        GameActor sut = new(host, documentStore);
 
         // Act
 
@@ -48,13 +50,14 @@ public class GameActorUnitTests
 
         Assert.Contains(player, game.Players);
     }
-    [Fact]
-    internal async Task map()
+
+    [Theory, AutoNSubstituteData]
+    internal async Task map(IDocumentStore documentStore)
     {
         // Arrange
 
         ActorHost host = ActorHost.CreateForTest<GameActor>();
-        GameActor sut = new(host);
+        GameActor sut = new(host, documentStore);
 
         await sut.StartRound();
 
@@ -71,12 +74,13 @@ public class GameActorUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task change_player_turn_given_current_round(
+            IDocumentStore documentStore,
             Player[] players)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);            
+            GameActor sut = new(host, documentStore);
 
             foreach (Player player in players)
             {
@@ -103,13 +107,14 @@ public class GameActorUnitTests
             Assert.NotEqual(sut.CurrentRound?.CurrentTrick?.PlayerTurn.Player.Id, turn?.Player.Id);
         }
 
-        [Fact]
-        internal async Task change_player_turn_given_no_current_round()
+        [Theory, AutoNSubstituteData]
+        internal async Task change_player_turn_given_no_current_round(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 
@@ -125,14 +130,15 @@ public class GameActorUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task pass_cards(
-        Player player1,
-        Player player2,
-        PassCard[] passCards)
+            IDocumentStore documentStore,
+            Player player1,
+            Player player2,
+            PassCard[] passCards)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.AddPlayer(player1);
             await sut.AddPlayer(player2);
@@ -152,14 +158,15 @@ public class GameActorUnitTests
 
         [Theory, AutoNSubstituteData]
         internal async Task do_not_pass_cards_given_no_current_round(
-        Player player1,
-        Player player2,
-        PassCard[] passCards)
+            IDocumentStore documentStore,
+            Player player1,
+            Player player2,
+            PassCard[] passCards)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.AddPlayer(player1);
             await sut.AddPlayer(player2);
@@ -179,13 +186,14 @@ public class GameActorUnitTests
 
     public class PlayBots
     {
-        [Fact]
-        internal async Task play_bots_when_current_round_is_not_null()
+        [Theory, AutoNSubstituteData]
+        internal async Task play_bots_when_current_round_is_not_null(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.AddBotPlayer();
             await sut.AddBotPlayer();
@@ -207,13 +215,14 @@ public class GameActorUnitTests
             Assert.NotEqual(sut.CurrentRound?.CurrentTrick?.PlayerTurn.Player.Id, turn?.Player.Id);
         }
 
-        [Fact]
-        internal async Task do_not_play_bots_when_current_round_is_null()
+        [Theory, AutoNSubstituteData]
+        internal async Task do_not_play_bots_when_current_round_is_null(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 
@@ -229,13 +238,14 @@ public class GameActorUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task play_card_when_current_round_is_not_null(
+            IDocumentStore documentStore,
             Player player,
             Card card)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.AddPlayer(player);
             await sut.StartRound();
@@ -264,13 +274,14 @@ public class GameActorUnitTests
 
         [Theory, AutoNSubstituteData]
         internal async Task do_not_play_card_when_current_round_is_null(
+            IDocumentStore documentStore,
             Player player,
             Card card)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 
@@ -284,13 +295,14 @@ public class GameActorUnitTests
 
     public class StartNewRound
     {
-        [Fact]
-        internal async Task start_new_round_with_passing_direction_across()
+        [Theory, AutoNSubstituteData]
+        internal async Task start_new_round_with_passing_direction_across(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.StartRound();
             await sut.StartRound();
@@ -317,13 +329,14 @@ public class GameActorUnitTests
             }
         }
 
-        [Fact]
-        internal async Task start_new_round_with_passing_direction_left()
+        [Theory, AutoNSubstituteData]
+        internal async Task start_new_round_with_passing_direction_left(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.StartRound();
 
@@ -348,13 +361,14 @@ public class GameActorUnitTests
             }
         }
 
-        [Fact]
-        internal async Task start_new_round_with_passing_direction_none()
+        [Theory, AutoNSubstituteData]
+        internal async Task start_new_round_with_passing_direction_none(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 
@@ -376,13 +390,15 @@ public class GameActorUnitTests
                 Assert.Equal(13, game.CurrentRound?.Players.ElementAt(i).Cards.Length);
             }
         }
-        [Fact]
-        internal async Task start_new_round_with_passing_direction_right()
+
+        [Theory, AutoNSubstituteData]
+        internal async Task start_new_round_with_passing_direction_right(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             await sut.StartRound();
             await sut.StartRound();
@@ -413,12 +429,13 @@ public class GameActorUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task start_trick_when_current_round_is_not_null(
+            IDocumentStore documentStore,
             Player[] players)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             foreach (Player player in players)
             {
@@ -441,13 +458,14 @@ public class GameActorUnitTests
             Assert.NotNull(sut.CurrentRound?.CurrentTrick);
         }
 
-        [Fact]
-        internal async Task do_not_start_trick_when_current_round_is_null()
+        [Theory, AutoNSubstituteData]
+        internal async Task do_not_start_trick_when_current_round_is_null(
+            IDocumentStore documentStore)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 
@@ -463,6 +481,7 @@ public class GameActorUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task return_success_when_played_card_is_valid(
+            IDocumentStore documentStore,
             Player[] players)
         {
             // Arrange
@@ -470,7 +489,7 @@ public class GameActorUnitTests
             Card card = new(Suit.Clubs, Rank.Two);
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             foreach (Player player in players)
             {
@@ -502,12 +521,13 @@ public class GameActorUnitTests
 
         [Theory, AutoNSubstituteData]
         internal async Task return_invalid_when_current_round_is_null(
+            IDocumentStore documentStore,
             Card card)
         {
             // Arrange
 
             ActorHost host = ActorHost.CreateForTest<GameActor>();
-            GameActor sut = new(host);
+            GameActor sut = new(host, documentStore);
 
             // Act
 

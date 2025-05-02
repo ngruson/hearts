@@ -107,11 +107,14 @@ public class RoundUnitTests
             foreach (Trick trick in sut.Tricks)
             {
                 trick.IsCompleted = true;
+                trick.Winner = players[0].Player;
             }
 
             while (!sut.IsCompleted)
             {
-                sut.Tricks = [.. sut.Tricks, new Trick([.. players.Select(_ => _.Player)], players[0])];
+                sut.StartTrick();
+                //sut.Tricks = [.. sut.Tricks, new Trick(Guid.NewGuid(), sut.Id, [.. players.Select(_ => _.Player)], players[0])];
+                sut.Tricks[^1].Winner = players[0].Player;
                 sut.Tricks[^1].IsCompleted = true;
             }
 
@@ -472,11 +475,13 @@ public class RoundUnitTests
         [Theory, AutoNSubstituteData]
         public void calculate_scores(
             Round sut,
-            RoundPlayer[] players)
+            RoundPlayer[] players,
+            Guid trickId)
         {
             // Arrange
-            
-            Trick trick = new([..players.Select(_ => _.Player)], players[0])
+
+
+            Trick trick = new(trickId, sut.Id, [..players.Select(_ => _.Player)], players[0])
             {
                 TrickCards = [..Enumerable.Repeat(
                     new TrickCard(new Contracts.Card(Contracts.Suit.Hearts, Contracts.Rank.Two), players[0].Player.Id),
@@ -500,11 +505,12 @@ public class RoundUnitTests
         [Theory, AutoNSubstituteData]
         public void calculate_scores_with_queen_of_spades(
             Round sut,
-            RoundPlayer[] players)
+            RoundPlayer[] players,
+            Guid trickId)
         {
             // Arrange
 
-            Trick trick = new([.. players.Select(_ => _.Player)], players[0])
+            Trick trick = new(trickId, sut.Id, [.. players.Select(_ => _.Player)], players[0])
             {
                 TrickCards = [..Enumerable.Repeat(
                     new TrickCard(new Contracts.Card(Contracts.Suit.Hearts, Contracts.Rank.Two), players[0].Player.Id),
