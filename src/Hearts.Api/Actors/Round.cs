@@ -7,6 +7,7 @@ public class Round
 {
     public Trick? CurrentTrick => this.Tricks.LastOrDefault();
     public Guid GameId { get; set; }
+    public Guid Id { get; set; }
     public bool IsCompleted => this.Tricks.Length == 13 && this.Tricks.All(_ => _.IsCompleted);
     public bool IsHeartsBroken { get; set; }
     public RoundPlayer[] Players { get; set; } = [];
@@ -17,6 +18,7 @@ public class Round
     {
         Round round = new()
         {
+            Id = Guid.CreateVersion7(),
             GameId = gameId,
             Players = [.. players.Select(player => new RoundPlayer(player))],
             SelectingCards = selectingCards
@@ -46,6 +48,7 @@ public class Round
     internal Contracts.Round Map()
     {
         return new(
+            this.Id,
             this.GameId,
             [.. this.Players.Select(_ => _.Map())],
             this.SelectingCards,
@@ -114,6 +117,7 @@ public class Round
         if (this.Tricks.Length > 0)
         {
             trick = Trick.Create(
+                this.Id,
                 [.. this.Players.Select(_ => _.Player)],
                 this.Players.Single(_ => _.Player.Id == this.CurrentTrick?.Winner?.Id),
                 null);
@@ -121,6 +125,7 @@ public class Round
         else
         {
             trick = Trick.Create(
+                this.Id,
                 [.. this.Players.Select(_ => _.Player)],
                 this.Players.Single(_ => _.Cards.Any(card => card.Suit == Suit.Clubs && card.Rank == Rank.Two)),
                 Suit.Clubs);

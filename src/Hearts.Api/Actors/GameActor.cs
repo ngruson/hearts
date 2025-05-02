@@ -1,10 +1,12 @@
 using Ardalis.Result;
 using Dapr.Actors.Runtime;
+using Hearts.Api.Eventing.Events;
 using Hearts.Contracts;
+using Marten;
 
 namespace Hearts.Api.Actors;
 
-internal class GameActor(ActorHost host) : Actor(host), IGameActor
+internal class GameActor(ActorHost host, IDocumentStore documentStore) : Actor(host), IGameActor
 {
     public Round? CurrentRound => this.Rounds.LastOrDefault();
     public PassingDirection PassingDirection { get; set; } = PassingDirection.None;
@@ -30,10 +32,14 @@ internal class GameActor(ActorHost host) : Actor(host), IGameActor
         await this.AddPlayer(player);
     }
 
-    public Task AddPlayer(Player player)
+    public async Task AddPlayer(Player player)
     {
         this.Players = [.. this.Players, player];
-        return Task.CompletedTask;
+
+        PlayerJoinedEvent playerJoinedEvent = new(player);
+        await using IDocumentSession session = documentStore.LightweightSession();
+        session.Events.Append(this.Id.ToString(), playerJoinedEvent);
+        await session.SaveChangesAsync();
     }
 
     public Task ChangePlayerTurn()

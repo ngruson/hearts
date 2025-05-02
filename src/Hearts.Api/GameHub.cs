@@ -4,9 +4,12 @@ using Ardalis.Result;
 using Dapr.Actors;
 using Dapr.Actors.Client;
 using Hearts.Api.Actors;
+using Hearts.Api.Eventing.Events;
+using Hearts.Api.Eventing.Projections;
 using Hearts.Api.OpenTelemetry;
 using Hearts.Contracts;
 using Hearts.Contracts.Events;
+using Marten;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Hearts.Api;
@@ -16,10 +19,10 @@ public class GameHub : Hub<IGameClient>
     private readonly IActorProxyFactory actorProxyFactory;
     private readonly ActorProxyOptions actorProxyOptions;
     private readonly Instrumentation instrumentation;
+    private readonly IDocumentStore documentStore;
 
-    public GameHub(IActorProxyFactory actorProxyFactory, Instrumentation instrumentation)
+    public GameHub(IActorProxyFactory actorProxyFactory, IDocumentStore documentStore, Instrumentation instrumentation)
     {
-        this.instrumentation = instrumentation;
         this.actorProxyFactory = actorProxyFactory;
         this.actorProxyOptions = new()
         {
@@ -29,6 +32,9 @@ public class GameHub : Hub<IGameClient>
                 PropertyNameCaseInsensitive = true
             }
         };
+
+        this.documentStore = documentStore;
+        this.instrumentation = instrumentation;
     }
 
     public new virtual IHubCallerClients<IGameClient> Clients
@@ -52,6 +58,11 @@ public class GameHub : Hub<IGameClient>
         {
             ActorId actorId = new(Guid.CreateVersion7().ToString());
             IGameActor gameActor = this.actorProxyFactory.CreateActorProxy<IGameActor>(actorId, nameof(GameActor), this.actorProxyOptions);
+
+            GameCreatedEvent gameCreatedEvent = new(Guid.Parse(actorId.GetId()));
+            await using IDocumentSession session = this.documentStore.LightweightSession();
+            session.Events.StartStream<GameProjection>(gameCreatedEvent.GameId, gameCreatedEvent);
+            await session.SaveChangesAsync();
 
             await gameActor.AddPlayer(player);
             Game game = await gameActor.Map();

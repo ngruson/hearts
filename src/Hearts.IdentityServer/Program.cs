@@ -33,12 +33,6 @@ try
         });
     }
 
-    app.Use(async (context, next) =>
-    {
-        context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;");
-        await next();
-    });
-
     app.Run();
 }
 catch (Exception ex) when (ex is not HostAbortedException)
