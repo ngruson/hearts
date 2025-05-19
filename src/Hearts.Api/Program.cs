@@ -1,4 +1,5 @@
 using Hearts.Api;
+using Oakton;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -6,4 +7,4 @@ WebApplication app = builder
     .ConfigureServices()
     .ConfigurePipeline();
 
-app.Run();
+await app.RunOaktonCommands(args);

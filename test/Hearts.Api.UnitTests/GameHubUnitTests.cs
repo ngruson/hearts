@@ -5,9 +5,12 @@ using AutoFixture.Xunit2;
 using Dapr.Actors;
 using Dapr.Actors.Client;
 using Hearts.Api.Actors;
+using Hearts.Api.Eventing.Events;
+using Hearts.Api.Eventing.Projections;
 using Hearts.Api.OpenTelemetry;
 using Hearts.Contracts;
 using Hearts.Contracts.Events;
+using Marten;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -109,11 +112,12 @@ public class GameHubUnitTests
     {
         [Theory, AutoNSubstituteData]
         internal async Task create_new_game(
-            [Substitute, Frozen] IGameActor gameActor,
             [Substitute, Frozen] IActorProxyFactory actorProxyFactory,
+            [Substitute, Frozen] IDocumentStore documentStore,
+            [Substitute, Frozen] IGameActor gameActor,            
             Game game,
             GameHub sut,
-            Player player)
+            IDocumentSession documentSession)
         {
             // Arrange
 
@@ -122,36 +126,38 @@ public class GameHubUnitTests
             actorProxyFactory.CreateActorProxy<IGameActor>(Arg.Any<ActorId>(), nameof(GameActor), Arg.Any<ActorProxyOptions>())
                 .Returns(gameActor);
 
+            documentStore.LightweightSession().Returns(documentSession);
+
             using TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
                 .AddSource("Hearts.Api")
                 .Build();
 
             // Act
 
-            await sut.CreateNewGame(player);
+            await sut.CreateNewGame();
 
             // Assert
 
-            await gameActor.Received().AddPlayer(player);
-            await gameActor.Received().StartRound();
+            documentSession.Events.Received().StartStream<GameProjection>(Arg.Any<Guid>(), Arg.Any<GameCreatedEvent>());
+            await documentSession.Received().SaveChangesAsync();
         }
 
         [Theory, AutoNSubstituteData]
         internal async Task do_not_create_new_game_when_activity_is_null(
-            [Substitute, Frozen] IGameActor gameActor,
-            GameHub sut,
-            Player player)
+            [Substitute, Frozen] IDocumentStore documentStore,
+            GameHub sut)
         {
             // Arrange
 
+            documentStore.LightweightSession().Returns(Substitute.For<IDocumentSession>());
+
             // Act
 
-            await sut.CreateNewGame(player);
+            await sut.CreateNewGame();
 
             // Assert
 
-            await gameActor.DidNotReceive().AddPlayer(player);
-            await gameActor.DidNotReceive().StartRound();
+            documentStore.DidNotReceive().LightweightSession();
         }
     }
 

@@ -5,24 +5,28 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Ardalis.Result" Version="10.1.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
+    <PackageVersion Include="Ardalis.Result.AspNetCore" Version="10.1.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.1" />
     <PackageVersion Include="Aspire.Hosting.Dapr" Version="9.0.0" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.2.0" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.2.1" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="9.2.1" />
     <PackageVersion Include="AutoFixture" Version="5.0.0-preview0011" />
     <PackageVersion Include="AutoFixture.AutoNSubstitute " Version="5.0.0-preview0011" />
     <PackageVersion Include="AutoFixture.XUnit2" Version="5.0.0-preview0011" />
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
+    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="9.4.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.15.4" />
-    <PackageVersion Include="Dapr.AspNetCore" Version="1.15.0" />
+    <PackageVersion Include="Dapr.AspNetCore" Version="1.15.4" />
     <PackageVersion Include="Dapr.Client" Version="1.15.4" />
     <PackageVersion Include="Dapr.Workflow" Version="1.15.0" />
     <PackageVersion Include="Duende.IdentityServer.AspNetIdentity" version="7.2.2" />
     <PackageVersion Include="Duende.IdentityServer.EntityFramework" Version="7.2.2" />
-    <PackageVersion Include="Marten" Version="7.40.2" />
+    <PackageVersion Include="Marten" Version="7.40.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.4" PrivateAssets="all" />
@@ -52,10 +56,13 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.6.0-beta.3" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.11.1" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.2.7" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
+    <PackageVersion Include="WolverineFx" Version="3.13.0" />
+    <PackageVersion Include="WolverineFx.Http.Marten" Version="3.13.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.42" />
   </ItemGroup>

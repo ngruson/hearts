@@ -23,16 +23,19 @@ public static class Config
                 ClientId = "blazor",
                 ClientName = "Hearts Blazor Application",
 
+                AllowOfflineAccess = true,
+
                 AllowedGrantTypes = GrantTypes.Code,
+                
+                ClientSecrets = { new Secret("secret".Sha256()) },
 
-                RequireClientSecret = false,
-                //ClientSecrets = { new Secret("511536EF-F270-4058-80CA-1C89C192F69A".Sha256()) },
-
-                RedirectUris = [$"{configuration["blazorEndpoint"]}/authentication/login-callback"],
+                RedirectUris = [$"{configuration["blazorEndpoint"]}/signin-oidc"],
 
                 PostLogoutRedirectUris = [$"{configuration["blazorEndpoint"]}/signout-callback-oidc"],
 
-                AllowedScopes = { "openid", "profile" }
+                AllowedScopes = { "openid", "profile", "offline_access" },
+
+                AlwaysIncludeUserClaimsInIdToken = true
             }
         ];
 }

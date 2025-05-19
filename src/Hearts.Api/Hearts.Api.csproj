@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.Result" />
+    <PackageReference Include="Ardalis.Result.AspNetCore" />
     <PackageReference Include="Dapr.Actors.AspNetCore" />
     <PackageReference Include="Marten" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="WolverineFx" />
+    <PackageReference Include="WolverineFx.Http.Marten" />
   </ItemGroup>
 
   <ItemGroup>    

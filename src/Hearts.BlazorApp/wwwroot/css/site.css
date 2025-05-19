@@ -14,6 +14,7 @@
     --color-green-700: oklch(52.7% 0.154 150.069);
     --color-blue-500: oklch(62.3% 0.214 259.815);
     --color-blue-800: oklch(42.4% 0.199 265.638);
+    --color-gray-100: oklch(96.7% 0.003 264.542);
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-300: oklch(87.2% 0.01 258.338);
     --color-gray-500: oklch(55.1% 0.027 264.364);
@@ -664,6 +665,18 @@
   .dark\:\!text-gray-300 {
     &:where(.dark, .dark *) {
       color: var(--color-gray-300) !important;
+    }
+  }
+  .\[\&\>tbody\>tr\]\:odd\:bg-gray-100 {
+    &>tbody>tr {
+      &:nth-child(odd) {
+        background-color: var(--color-gray-100);
+      }
+    }
+  }
+  .\[\&\>thead\>tr\>th\]\:text-left {
+    &>thead>tr>th {
+      text-align: left;
     }
   }
 }

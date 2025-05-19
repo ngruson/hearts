@@ -1,9 +1,9 @@
 @page
-@model Hearts.IdentityServer.Pages.Logout.Index
+@model Hearts.IdentityServer.Pages.Account.Logout.Index
 
-<div class="logout-page">
+<div class="container pt-40 mx-auto dark:!text-gray-300">
     <div class="lead">
-        <h1>Logout</h1>
+        <h1 class="!font-medium !text-5xl">Logout</h1>
         <p>Would you like to logout of IdentityServer?</p>
     </div>
 
@@ -11,7 +11,7 @@
         <input type="hidden" name="logoutId" value="@Model.LogoutId"  />
         
         <div class="form-group">
-            <button class="btn btn-primary">Yes</button>
+            <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Yes</button>
         </div>
     </form>
 </div>

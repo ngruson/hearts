@@ -1,3 +1,3 @@
 namespace Hearts.Api.Eventing.Events;
 
-internal record GameCreatedEvent(Guid GameId);
+public record GameCreatedEvent(Guid GameId, DateTime CreatedTimestamp);
