@@ -8,7 +8,6 @@ namespace Hearts.BlazorApp.Services.SignalR;
 public class SignalRService
 {
     private readonly HubConnection hubConnection;
-    private bool isStarted;
 
     public Player? Player { get; private set; }
 
@@ -67,19 +66,17 @@ public class SignalRService
 
     public async Task StartAsync()
     {
-        if (!this.isStarted)
+        if (this.hubConnection.State == HubConnectionState.Disconnected)
         {
             await this.hubConnection.StartAsync();
-            this.isStarted = true;
         }
     }
 
     public async Task StopAsync()
     {
-        if (this.isStarted)
+        if (this.hubConnection.State == HubConnectionState.Connected)
         {
             await this.hubConnection.StopAsync();
-            this.isStarted = false;
         }
     }
 }

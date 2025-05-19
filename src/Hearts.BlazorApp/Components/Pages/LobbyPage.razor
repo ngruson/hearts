@@ -1,20 +1,33 @@
 @page "/"
+@rendermode InteractiveServer
 
+@using Dapr.Client
 @using Hearts.Contracts
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject DaprClient DaprClient
 @inject LocalStorageService LocalStorageService
 @inject SignalRService SignalRService
 @attribute [Authorize]
 
 <div class="container pt-40">
-    <div class="flex flex-col items-center mx-auto p-5">
+    <div class="flex flex-col items-center mx-auto p-5 dark:!text-gray-300">
         <!-- Header Section -->
         <header class="text-center mb-5">
-            <h1 class="!font-medium !text-5xl dark:!text-gray-300">Game Lobby</h1>
-            <p class="dark:!text-gray-300">Welcome to the Hearts game lobby. Start or join a game to begin playing.</p>
+            <h1 class="!font-medium !text-5xl">Game Lobby</h1>
+            <p>Welcome to the Hearts game lobby. Start or join a game to begin playing.</p>
         </header>
 
+        <div class="w-4/5 mb-5 flex items-center justify-center">
+            <QuickGrid Items="Games.AsQueryable()" Virtualize="true" PageSize="5" Class="[&>thead>tr>th]:text-left">
+                <PropertyColumn Property="@(game => game.Type)" Title="Game" Class="w-32" />
+                <PropertyColumn Property="@(game => game.State)" Title="State" Class="w-32" />
+                <PropertyColumn Property="@(game => game.Enrolled)" Title="Enrolled" Class="w-32" />
+            </QuickGrid>
+        </div>
+
         <!-- Running Games Section -->
-        <section class="w-4/5 mb-5">
+        @* <section class="w-4/5 mb-5">
             <h2 class="!font-medium !text-3xl dark:!text-gray-300 border-b-2 border-gray-300 pb-1.25 mb-2.5">Running Games</h2>
             <ul class="list-none p-0">
                 @foreach (var game in RunningGames)
@@ -24,16 +37,16 @@
                     </li>
                 }
             </ul>
-        </section>
+        </section> *@
 
         <!-- Start New Game Section -->
-        <section class="w-4/5 mb-5">
+        @* <section class="w-4/5 mb-5">
             <h2 class="!font-medium !text-3xl dark:!text-gray-300 border-b-2 border-gray-300 pb-1.25 mb-2.5">Start a New Game</h2>
             <CreateGameButton Player="player" />
-        </section>
+        </section> *@
 
         <!-- Waiting Games Section -->
-        <section class="w-4/5 mb-5">
+        @* <section class="w-4/5 mb-5">
             <h2 class="!font-medium !text-3xl dark:!text-gray-300 border-b-2 border-gray-300 pb-1.25 mb-2.5">Waiting Games</h2>
             <ul class="list-none p-0">
                 @foreach (var game in WaitingGames)
@@ -44,36 +57,39 @@
                     </li>
                 }
             </ul>
-        </section>
+        </section> *@
 
         <!-- Player Information Section -->
-        <section class="w-4/5 mb-5">
+        @* <section class="w-4/5 mb-5">
             <h2 class="!font-medium !text-3xl dark:!text-gray-300 border-b-2 border-gray-300 pb-1.25 mb-2.5">Player Information</h2>
             <p class="dark:!text-gray-300">Player Name: @player?.PlayerName</p>
-        </section>
+        </section> *@
     </div>
 </div>
 
 @code {
-    private List<Game> RunningGames = new List<Game>();
-    private List<Game> WaitingGames = new List<Game>();
+    private List<Contracts.Api.Game> Games = [];
     private Player? player;
 
     protected override async Task OnInitializedAsync()
     {
         await SignalRService.StartAsync();
 
-        player = await LocalStorageService.GetItemAsync<Player>("player");
+        Games = await FetchGames();
+    }
 
-        if (player is null)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            SignalRService.PlayerCreated += OnPlayerCreated;
-            await SignalRService.CreatePlayer("smirking_squiggly");
-        }
+            player = await LocalStorageService.GetItemAsync<Player>("player");
 
-        // Fetch running and waiting games from server
-        RunningGames = await FetchRunningGames();
-        WaitingGames = await FetchWaitingGames();
+            if (player is null)
+            {
+                SignalRService.PlayerCreated += OnPlayerCreated;
+                await SignalRService.CreatePlayer("smirking_squiggly");
+            }
+        }
     }
 
     private void OnPlayerCreated(object? sender, Player player)
@@ -83,22 +99,19 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private Task<List<Game>> FetchRunningGames()
+    private async Task<List<Contracts.Api.Game>> FetchGames()
     {
-        return Task.FromResult(new List<Game>
+        try
         {
-            new Game(Guid.NewGuid(), [], []),
-            new Game(Guid.NewGuid(), [], [])
-        });
-    }
-
-    private Task<List<Game>> FetchWaitingGames()
-    {
-        return Task.FromResult(new List<Game>
+            using var client = DaprClient.CreateInvokeHttpClient("backend");
+            var response = await client.GetFromJsonAsync<List<Contracts.Api.Game>>("/games");
+            return response ?? new List<Contracts.Api.Game>();
+        }
+        catch (Exception ex)
         {
-            new Game(Guid.NewGuid(), [], []),
-            new Game(Guid.NewGuid(), [], [])
-        });
+            Console.Error.WriteLine($"Error fetching games: {ex.Message}");
+            return new List<Contracts.Api.Game>();
+        }
     }
 
     private void JoinGame(Guid gameId)

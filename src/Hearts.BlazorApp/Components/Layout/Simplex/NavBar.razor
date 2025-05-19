@@ -1,6 +1,9 @@
+@using Hearts.BlazorApp.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DarkModeService DarkModeService
+@inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 
 <div class="fixed top-0 left-0 w-full">  
     <div class="flex justify-start bg-red-600 border border-red-800 py-2 text-base">  
@@ -68,8 +71,13 @@
     private bool IsLightDarkModeDropdownOpen = false;
     private bool IsUserDropdownOpen = false;
     private bool IsUserAuthenticated = false;
-    private string UserName = string.Empty;
+    private string? UserName = string.Empty;
     private DotNetObjectReference<NavBar>? dotNetRef;
+
+    [Parameter]
+    public bool IsDarkMode { get; set; } = default!;
+    [Parameter]
+    public EventCallback<bool> IsDarkModeChanged { get; set; }
 
     protected override async Task OnInitializedAsync()  
     {  
@@ -91,7 +99,12 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         IsUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
-        UserName = authState.User.Identity?.Name ?? string.Empty;
+
+        UserName = authState.User.Identity?.Name;
+        if (string.IsNullOrEmpty(UserName))
+        {
+            UserName = authState.User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? string.Empty;
+        }
         StateHasChanged();
     }
 
@@ -126,20 +139,23 @@
 
     private async Task SetLightMode(MouseEventArgs args)
     {
-        await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", false);
+        IsDarkMode = false;
+        await DarkModeService.SetDarkModeAsync(IsDarkMode);
+        await IsDarkModeChanged.InvokeAsync(IsDarkMode);
         IsLightDarkModeDropdownOpen = !IsLightDarkModeDropdownOpen;
     }
 
     private async Task SetDarkMode(MouseEventArgs args)
     {
-        await this.JSRuntime.InvokeVoidAsync("localStorageHelper.toggleDarkMode", true);
+        IsDarkMode = true;
+        await DarkModeService.SetDarkModeAsync(IsDarkMode);
+        await IsDarkModeChanged.InvokeAsync(IsDarkMode);
         IsLightDarkModeDropdownOpen = !IsLightDarkModeDropdownOpen;
     }
 
     private void SignOut(MouseEventArgs args)
     {
-        Navigation.NavigateToLogout("authentication/logout");
-
+        NavigationManager.NavigateTo($"{Configuration["services:identity:https:0"]}/Account/Logout");
         IsUserDropdownOpen = !IsUserDropdownOpen;
     }
 

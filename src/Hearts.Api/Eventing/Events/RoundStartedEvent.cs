@@ -2,4 +2,4 @@ using Hearts.Contracts;
 
 namespace Hearts.Api.Eventing.Events;
 
-internal record RoundStartedEvent(Round Round);
+public record RoundStartedEvent(Round Round);

@@ -46,7 +46,7 @@ public class GameHub : Hub<IGameClient>
         set => base.Clients = value;
     }
 
-    public async Task CreateNewGame(Player player)
+    public async Task CreateNewGame()
     {
         using Activity? activity = this.instrumentation.StartActivity(nameof(CreateNewGame));
         if (activity is null)
@@ -56,22 +56,20 @@ public class GameHub : Hub<IGameClient>
 
         try
         {
+            DateTime createdTimestamp = DateTime.UtcNow;
             ActorId actorId = new(Guid.CreateVersion7().ToString());
             IGameActor gameActor = this.actorProxyFactory.CreateActorProxy<IGameActor>(actorId, nameof(GameActor), this.actorProxyOptions);
 
-            GameCreatedEvent gameCreatedEvent = new(Guid.Parse(actorId.GetId()));
+            GameCreatedEvent gameCreatedEvent = new(Guid.Parse(actorId.GetId()), createdTimestamp);
             await using IDocumentSession session = this.documentStore.LightweightSession();
             session.Events.StartStream<GameProjection>(gameCreatedEvent.GameId, gameCreatedEvent);
             await session.SaveChangesAsync();
-
-            await gameActor.AddPlayer(player);
+            
             Game game = await gameActor.Map();
 
-            await this.NotifyGameUpdated(activity, game);
+            //await this.AddBotPlayers(gameActor, activity);
 
-            await this.AddBotPlayers(gameActor, activity);
-
-            await this.StartNewRound(gameActor, activity);
+            //await this.StartNewRound(gameActor, activity);
         }
         catch (Exception ex)
         {

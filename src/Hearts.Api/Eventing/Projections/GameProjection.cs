@@ -3,11 +3,17 @@ using Marten.Events.Aggregation;
 
 namespace Hearts.Api.Eventing.Projections;
 
-internal class GameProjection : SingleStreamProjection<Entities.Game>
+public class GameProjection : SingleStreamProjection<Entities.Game>
 {
+    public static void Apply(GameCompletedEvent gameCompletedEvent, Entities.Game game)
+    {
+        game.State = Contracts.GameState.Completed;
+    }
+
     public static void Apply(GameCreatedEvent gameCreatedEvent, Entities.Game game)
     {
         game.Id = gameCreatedEvent.GameId;
+        game.State = Contracts.GameState.Registering;
     }
 
     public static void Apply(PlayerJoinedEvent playerJoinedEvent, Entities.Game game)

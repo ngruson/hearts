@@ -1,0 +1,35 @@
+@using Hearts.BlazorApp.Services
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
+@inject DarkModeService DarkModeService
+
+<div class="bg-white dark:bg-stone-900 flex flex-col min-h-screen @(IsDarkMode ? "dark" : "")">
+    <NavBar @bind-IsDarkMode="IsDarkMode" />
+    @Body
+</div>
+
+@code {
+    protected bool IsDarkMode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authenticationState.User.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo(
+              $"{Configuration["Services:IdSrv:0"]}/Account/Login?ReturnUrl={NavigationManager.BaseUri}");
+        }        
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsDarkMode = await DarkModeService.GetDarkModeAsync();
+            StateHasChanged();
+        }
+    }
+}

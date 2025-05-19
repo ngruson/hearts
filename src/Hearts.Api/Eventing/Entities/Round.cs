@@ -1,6 +1,6 @@
 namespace Hearts.Api.Eventing.Entities;
 
-internal record Round(Guid Id, Guid GameId)
+public record Round(Guid Id, Guid GameId)
 {
     public Trick[] Tricks = [];
 
